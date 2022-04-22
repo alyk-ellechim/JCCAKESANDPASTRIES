@@ -1,11 +1,13 @@
 <?php
 
-include '../admin/functions/db_Connection.php'; 
+include 'views/admin/functions/db_Connection.php'; 
+session_start();
 
-if(isset($_GET['ai'])){
-    $ai = mysqli_escape_string($mysqli, $_GET['ai']);
+if(isset($_GET['ui'])){
+    $ui = mysqli_escape_string($mysqli, $_GET['ui']);
+}else{
+    $ui = "";
 }
-
 
 ?>
 <!doctype html>
@@ -22,60 +24,46 @@ if(isset($_GET['ai'])){
     <link href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,800,900" rel="stylesheet">
 		
 		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-		<link rel="stylesheet" href="../../css/style.css">
+		<link rel="stylesheet" href="css/style.css">
   </head>
   <body>
 		
 		<div class="wrapper d-flex align-items-stretch">
 			<nav id="sidebar">
 				<div class="p-4 pt-5">
-		  		<a href="#" class="img logo rounded-circle mb-5" style="background-image: url(../../images/logo.png);"></a>
+		  		<a href="#" class="img logo rounded-circle mb-5" style="background-image: url(images/logo.png);"></a>
 	        <ul class="list-unstyled components mb-5">
-	          <!-- <li class="active">
-	            <a href="#homeSubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">Home</a>
-	            <ul class="collapse list-unstyled" id="homeSubmenu">
-                <li>
-                    <a href="#">Home 1</a>
-                </li>
-                <li>
-                    <a href="#">Home 2</a>
-                </li>
-                <li>
-                    <a href="#">Home 3</a>
-                </li>
-	            </ul>
-	          </li> -->
-
 
 	          <li class="active">
-	              <a href="dashboard.php">Dashboard</a>
+	              <a href="index.php?ui=<?php echo $ui; ?>">Home</a>
 	          </li>
-
-
-	          <!-- <li>
-              <a href="#pageSubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">Pages</a>
-              <ul class="collapse list-unstyled" id="pageSubmenu">
-                <li>
-                    <a href="#">Page 1</a>
-                </li>
-                <li>
-                    <a href="#">Page 2</a>
-                </li>
-                <li>
-                    <a href="#">Page 3</a>
-                </li>
-              </ul>
-	          </li> -->
 
 	          <li>
-              <a href="products.php">Products</a>
+              <a href="shop.php?ui=<?php echo $ui; ?>">Shop</a>
 	          </li>
+
+              <li>
+              <a href="#">Cart</a>
+	          </li>
+
 	          <li>
               <a href="#">Orders</a>
 	          </li>
 	        </ul>
 
-            <a href="../auth/logout.php?ai=<?php echo $ai; ?>" class="text-white btn btn-danger w-100">Logout</a>
+            <?php
+
+                if(isset($_SESSION['email']) && isset($_SESSION['password'])){
+                    $email = $_SESSION['email'];
+                    echo '<a href="views/auth/logout.php?ui='.$ui.'" class="text-white btn btn-danger w-100">Logout</a>';
+                }else{
+                    $email = 'User';
+                    echo '<a href="views/auth/login.php?" class="text-white btn btn-success w-100">Login</a>';
+                }
+
+
+            ?>
+            
 
 	        <div class="footer mt-4">
 	        	<p>
@@ -117,7 +105,7 @@ if(isset($_GET['ai'])){
                 </li>
               </ul> -->
 
-              <p class="nav navbar-nav ml-auto fs-5 fw-bold">Welcome Admin!</p>
+              <p class="nav navbar-nav ml-auto fs-5 fw-bold">Hello <?php echo $email; ?></p>
 
             </div>
           </div>
@@ -179,9 +167,9 @@ if(isset($_GET['ai'])){
       
 		</div>
 
-    <script src="../../js/jquery.min.js"></script>
-    <script src="../../js/popper.js"></script>
-    <script src="../../js/bootstrap.min.js"></script>
-    <script src="../../js/main.js"></script>
+    <script src="js/jquery.min.js"></script>
+    <script src="js/popper.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/main.js"></script>
   </body>
 </html>

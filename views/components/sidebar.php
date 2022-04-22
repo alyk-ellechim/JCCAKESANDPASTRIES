@@ -19,7 +19,7 @@
 		<div class="wrapper d-flex align-items-stretch">
 			<nav id="sidebar">
 				<div class="p-4 pt-5">
-		  		<a href="#" class="img logo rounded-circle mb-5" style="background-image: url(../../images/logo.png);"></a>
+		  		<a href="#" class="img logo rounded-circle mb-5" style="background-image: url(../../images/logo.jpg);"></a>
 	        <ul class="list-unstyled components mb-5">
 	          <!-- <li class="active">
 	            <a href="#homeSubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">Home</a>
@@ -38,7 +38,7 @@
 
 
 	          <li class="active">
-	              <a href="dashboard.php">Dashboard</a>
+	              <a href="#">Dashboard</a>
 	          </li>
 
 
@@ -58,7 +58,7 @@
 	          </li> -->
 
 	          <li>
-              <a href="products.php">Products</a>
+              <a href="#">Products</a>
 	          </li>
 	          <li>
               <a href="#">Orders</a>
@@ -66,9 +66,9 @@
 	        </ul>
 
 	        <div class="footer">
-	        	<p>
-					Copyright &copy;<script>document.write(new Date().getFullYear());</script> All rights reserved | JC Cakes and Pastries
-				</p>
+	        	<p><!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
+						  Copyright &copy;<script>document.write(new Date().getFullYear());</script> All rights reserved | This template is made with <i class="icon-heart" aria-hidden="true"></i> by <a href="https://colorlib.com" target="_blank">Colorlib.com</a>
+						  <!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. --></p>
 	        </div>
 
 	      </div>
@@ -84,9 +84,9 @@
               <i class="fa fa-bars"></i>
               <span class="sr-only">Toggle Menu</span>
             </button>
-            <!-- <button class="btn btn-dark d-inline-block d-lg-none ml-auto" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <button class="btn btn-dark d-inline-block d-lg-none ml-auto" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                 <i class="fa fa-bars"></i>
-            </button> -->
+            </button>
 
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
 
@@ -111,58 +111,9 @@
           </div>
         </nav>
 
-        <h2 class="mb-4">Dashboard</h2>
-        
-        <div class="content">
-
-
-            <div class="row">
-                <div class="col-sm-6">
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title">Daily Sales</h5>
-                            <p class="card-text fs-1">&#8369; 50.00</p>
-                            <a href="#" class="btn btn-primary">View</a>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-sm-6 mt-sm-0 mt-4">
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title">Pending Order</h5>
-                            <p class="card-text fs-1">10</p>
-                            <a href="#" class="btn btn-primary">View</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="row mt-4">
-                <div class="col-sm-6">
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title">Processing</h5>
-                            <p class="card-text fs-1">5</p>
-                            <a href="#" class="btn btn-primary">View</a>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-sm-6 mt-sm-0 mt-4">
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title">Out for Delivery</h5>
-                            <p class="card-text fs-1">5</p>
-                            <a href="#" class="btn btn-primary">View</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-
-        </div>
-
+        <h2 class="mb-4">Sidebar #01</h2>
+        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
       </div>
       
 		</div>

@@ -7,6 +7,9 @@ if(isset($_GET['ui'])){
     $ui = mysqli_escape_string($mysqli, $_GET['ui']);
 }else{
     $ui = "";
+    if(isset($_SESSION['ui'])){
+      $ui = $_SESSION['ui'];
+    }
 }
 
 ?>
@@ -43,7 +46,7 @@ if(isset($_GET['ui'])){
 	          </li>
 
               <li>
-              <a href="#">Cart</a>
+              <a href="cart.php?ui=<?php echo $ui; ?>">Cart</a>
 	          </li>
 
 	          <li>
@@ -84,26 +87,9 @@ if(isset($_GET['ui'])){
               <i class="fa fa-bars"></i>
               <span class="sr-only">Toggle Menu</span>
             </button>
-            <!-- <button class="btn btn-dark d-inline-block d-lg-none ml-auto" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                <i class="fa fa-bars"></i>
-            </button> -->
 
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
 
-              <!-- <ul class="nav navbar-nav ml-auto">
-                <li class="nav-item active">
-                    <a class="nav-link" href="#">Home</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">About</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Portfolio</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Contact</a>
-                </li>
-              </ul> -->
 
               <p class="nav navbar-nav ml-auto fs-5 fw-bold">Hello <?php echo $email; ?></p>
 
@@ -111,55 +97,57 @@ if(isset($_GET['ui'])){
           </div>
         </nav>
 
-        <h2 class="mb-4">Dashboard</h2>
+        <h4 class="text-center fw-bold">Make some sweet memories at<br>JC's Cakes and Pastries</h4>
+
+        <h2 class="mb-4">Home</h2>
         
         <div class="content">
 
+            <div class="card">
+                <h5 class="card-header  d-flex justify-content-between align-items-center">
+                    Featured Products
+                </h5>
+                <div class="card-body text-center overflow-auto" style="height: 410px;">
+                    <!-- Products --> 
 
-            <div class="row">
-                <div class="col-sm-6">
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title">Daily Sales</h5>
-                            <p class="card-text fs-1">&#8369; 50.00</p>
-                            <a href="#" class="btn btn-primary">View</a>
-                        </div>
-                    </div>
-                </div>
+                <?php
+                    $selectProduct = $mysqli->query("SELECT * FROM products ORDER BY id DESC LIMIT 6")
+                    or die("Failed to query database" .mysql_error());
+                    $row = mysqli_fetch_array($selectProduct);
+                    $hold = "";
+                        
+                    if(mysqli_num_rows($selectProduct) == 0){
+                        echo "<tr>
+                        <td class='tm-product-name'>No Product Available</td></tr>"; 
+                                        
+                    }else{
+                        do{
+                            $new_product = '<div class="card d-inline-block my-sm-4 mx-sm-2 text-start" style="width: 18rem; ">
+                            <img src="product_Images/'.$row['img'].'" class="card-img-top" alt="Product Image" style="height: 150px; width: 100%; object-fit: cover;">
+                            <div class="card-body">
+                                <h5 class="card-title">'.$row['name'].'</h5>
+                                <p class="card-text">'.$row['description'].'</p>
+                                <p class="card-text fs-6">&#8369; '.$row['price'].'.00</p>
+                                <form action="products.php" method="POST">
+                                <button type="submit" name="addToCart" value="'.$row['id'].'" class="btn text-white btn-primary">Add to Cart</button>
+                                <button type="submit" name="buyNow" value="'.$row['id'].'" class="btn btn-primary">Buy Now</button>
+                                </form>
+                            </div>
+                        </div>';
+                            $hold = $new_product . $hold;
+                            $display_all = $hold;
+                        }while($row = mysqli_fetch_array($selectProduct));
+                            
+                        echo $display_all;
+                    }         
+                ?>
 
-                <div class="col-sm-6 mt-sm-0 mt-4">
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title">Pending Order</h5>
-                            <p class="card-text fs-1">10</p>
-                            <a href="#" class="btn btn-primary">View</a>
-                        </div>
-                    </div>
+                
+                    
+
+
                 </div>
             </div>
-
-            <div class="row mt-4">
-                <div class="col-sm-6">
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title">Processing</h5>
-                            <p class="card-text fs-1">5</p>
-                            <a href="#" class="btn btn-primary">View</a>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-sm-6 mt-sm-0 mt-4">
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title">Out for Delivery</h5>
-                            <p class="card-text fs-1">5</p>
-                            <a href="#" class="btn btn-primary">View</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
 
         </div>
 

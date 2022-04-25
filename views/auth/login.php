@@ -19,6 +19,7 @@ if(isset($_SESSION['email']) && isset($_SESSION['password'])){
 		if($update_admin){
 		  	header("Location: ../admin/dashboard.php?ai=$aid");
 			// echo "Admin Login";
+			$_SESSION['ai'] = $aid;
 
 		}
 
@@ -38,7 +39,7 @@ if(isset($_SESSION['email']) && isset($_SESSION['password'])){
 		
 			if($update){
 			  header("Location: ../../index.php?ui=$id");
-				echo "User Login";
+			  $_SESSION['ui'] = $id;
 			}
 		}
 	
@@ -66,6 +67,7 @@ if(isset($_POST['signIn'])){
 
 			$_SESSION['email'] = $email;
 			$_SESSION['password'] = $password;
+			$_SESSION['ai'] = $aid;
 
 		}
 
@@ -85,9 +87,9 @@ if(isset($_POST['signIn'])){
 		
 			if($update){
 			  header("Location: ../../index.php?ui=$id");
-				echo "User Login";
 				$_SESSION['email'] = $email;
 				$_SESSION['password'] = $password;
+				$_SESSION['ui'] = $id;
 			}
 		}
 	

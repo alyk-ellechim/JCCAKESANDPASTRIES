@@ -3,6 +3,10 @@
 include '../admin/functions/db_Connection.php'; 
 session_start();
 
+if(isset($_GET['ai'])){
+  $ai = mysqli_escape_string($mysqli, $_GET['ai']);
+}
+
 if(isset($_POST['addProduct'])){
 
   $name = $_POST['name'];
@@ -122,19 +126,19 @@ if(isset($_POST['delProductBtn'])){
 	        <ul class="list-unstyled components mb-5">
 
 	          <li>
-	              <a href="dashboard.php">Dashboard</a>
+	              <a href="dashboard.php?ai=<?php echo $ai; ?>">Dashboard</a>
 	          </li>
 
 	          <li class="active">
-              <a href="products.php">Products</a>
+              <a href="products.php?ai=<?php echo $ai; ?>">Products</a>
 	          </li>
 	          <li>
-              <a href="#">Orders</a>
+              <a href="orders.php?ai=<?php echo $ai; ?>">Orders</a>
 	          </li>
 	        </ul>
 
 
-          <a href="" class="text-white btn btn-danger w-100">Logout</a>
+          <a href="../auth/logout.php?ai=<?php echo $ai; ?>" class="text-white btn btn-danger w-100">Logout</a>
 
 	        <div class="footer mt-4">
 	        	<p>

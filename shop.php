@@ -9,98 +9,36 @@ if(isset($_GET['ui'])){
     $ui = "";
 }
 
-if(isset($_POST['addProduct'])){
+if(isset($_POST['addToCart'])){
+  $prodID = $_POST['prod_id'];
 
-  $name = $_POST['name'];
-  $description = $_POST['description'];
-  $category = $_POST['category'];
-  $price = $_POST['price'];
-
-  $image = $_FILES['image']['name'];
-  $image_type = $_FILES['image']['type'];
-  $image_size = $_FILES['image']['size'];
-  $image_loc = $_FILES['image']['tmp_name'];
-  $image_store = "../../product_Images/".$image;
-
-  if($image_type == 'image/jpeg' || $image_type == 'image/png' || $image_type == 'image/jpg' || $image_type == 'image/gif'){
-    $insertProduct = $mysqli->query("INSERT INTO products(name, description, category, price, img) VALUES('$name', '$description', '$category','$price', '$image' )");
-   
-    move_uploaded_file($image_loc, $image_store);
-    if($insertProduct){
-
-      $_SESSION['success'] = '<div class="alert alert-success">New Product Added</div>';
-      header("Location: products.php");
-      exit();
-
-    }else{
-        echo "False";
-    }
+  if(isset($_POST['qty'])){
+    $qty = $_POST['qty'];
   }else{
-    $_SESSION['feedback'] = '<p id="error">Invalid file type</p>';
-
-    // echo "Invalid File Type";
+    $qty = 1;
   }
 
-  
+  $userID = base64_decode($ui);
 
-}elseif(isset($_POST['editProduct'])){
-  $id = $_POST['editProduct'];
+  $select_cart = $mysqli->query("SELECT * FROM cart WHERE userID = '$userID' AND prodID = '$prodID'");
 
-  $selectProductEdit = $mysqli->query("SELECT * FROM products WHERE id = '$id'")
-  or die("Failed to query database" .mysql_error());
-  $rowEdit = mysqli_fetch_array($selectProductEdit);
+  if(mysqli_num_rows($select_cart) != 0){
+      $row_cart = mysqli_fetch_array($select_cart);
 
-  $editModal = "true";
+      $totalQty = $row_cart['qty'] + $qty;
 
-}elseif(isset($_POST['updateProduct'])){
+      $cart_id = $row_cart['id'];
 
-  $id = $_POST['prodID'];
-
-  $name = $_POST['name'];
-  $description = $_POST['description'];
-  $category = $_POST['category'];
-  $price = $_POST['price'];
-
-  $image = $_FILES['image']['name'];
-  $image_type = $_FILES['image']['type'];
-  $image_size = $_FILES['image']['size'];
-  $image_loc = $_FILES['image']['tmp_name'];
-  $image_store = "../../product_Images/".$image;
-  
-  if($image != ""){
-    $updateProduct = $mysqli->query("UPDATE products SET name = '$name', category = '$category', price = '$price', img = '$image' WHERE id = '$id'");
-    move_uploaded_file($image_loc, $image_store);
-  }else{
-      $updateProduct = $mysqli->query("UPDATE products SET name = '$name', category = '$category', price = '$price' WHERE id = '$id'");
-  }
-
-
-  if($updateProduct){
-
-    $_SESSION['success'] = '<div class="alert alert-success">Product Saved</div>';
-    header("Location: products.php");
-    exit();
+      $update = $mysqli->query("UPDATE cart SET userID = '$userID' , prodID = '$prodID', qty = '$totalQty' WHERE id = '$cart_id' LIMIT 1");
 
   }else{
-      echo "False";
+      $insert = $mysqli->query("INSERT INTO cart(userID, prodID, qty) VALUES ('$userID', '$prodID', '$qty')");
   }
-}elseif(isset($_POST['delProduct'])){
 
-  $id = $_POST['prodID'];
-  $deleteProduct = $mysqli->query("DELETE FROM products WHERE id = '$id'");
+  header("Location: shop.php?ui=$ui");
 
-  if($deleteProduct){
-    $_SESSION['success'] = '<div class="alert alert-success">Product Deleted</div>';
-    header("Location: products.php");
-    exit();
-  }
 }
 
-if(isset($_POST['delProductBtn'])){
-
-  $id = $_POST['delProductBtn'];
-  $deleteModal = "true";
-}
 
 ?>
 <!doctype html>
@@ -136,7 +74,7 @@ if(isset($_POST['delProductBtn'])){
 	          </li>
 
               <li>
-              <a href="#">Cart</a>
+              <a href="cart.php?ui=<?php echo $ui; ?>">Cart</a>
 	          </li>
               
 	          <li>
@@ -188,16 +126,9 @@ if(isset($_POST['delProductBtn'])){
           </div>
         </nav>
 
-        <h2 class="mb-4">Products</h2>
+        <h2 class="mb-4">Shop</h2>
         
         <div class="content" id="contentID">
-
-        <?php
-          if(isset($_SESSION['success'])){
-            echo $_SESSION['success'];
-            unset($_SESSION['success']);
-          }
-        ?>
 
         <div class="card">
             <h5 class="card-header  d-flex justify-content-between align-items-center">
@@ -224,7 +155,8 @@ if(isset($_POST['delProductBtn'])){
                             <h5 class="card-title">'.$row['name'].'</h5>
                             <p class="card-text">'.$row['description'].'</p>
                             <p class="card-text fs-6">&#8369; '.$row['price'].'.00</p>
-                            <form action="products.php" method="POST">
+                            <form action="shop.php?ui='.$ui.'" method="POST">
+                            <input type="hidden" name="prod_id" value="'.$row['id'].'">
                             <button type="submit" name="addToCart" value="'.$row['id'].'" class="btn text-white btn-primary">Add to Cart</button>
                             <button type="submit" name="buyNow" value="'.$row['id'].'" class="btn btn-primary">Buy Now</button>
                             </form>
@@ -238,7 +170,7 @@ if(isset($_POST['delProductBtn'])){
                 }         
             ?>
 
-               
+          
                 
 
 
@@ -257,24 +189,5 @@ if(isset($_POST['delProductBtn'])){
     <script src="js/bootstrap.min.js"></script>
     <script src="js/main.js"></script>
 
-    <?php			
-      if(!empty($editModal)) {
-        // CALL MODAL HERE
-        echo '<script type="text/javascript">
-          $(document).ready(function(){
-            $("#EditProductModal").modal("show");
-          });
-        </script>';
-      } 
-
-      if(!empty($deleteModal)) {
-        // CALL MODAL HERE
-        echo '<script type="text/javascript">
-          $(document).ready(function(){
-            $("#DelteProductModal").modal("show");
-          });
-        </script>';
-      } 
-    ?>
   </body>
 </html>

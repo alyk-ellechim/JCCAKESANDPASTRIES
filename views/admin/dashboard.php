@@ -48,7 +48,7 @@ if(isset($_GET['ai'])){
 
 
 	          <li class="active">
-	              <a href="dashboard.php">Dashboard</a>
+	              <a href="dashboard.php?ai=<?php echo $ai; ?>">Dashboard</a>
 	          </li>
 
 
@@ -68,10 +68,10 @@ if(isset($_GET['ai'])){
 	          </li> -->
 
 	          <li>
-              <a href="products.php">Products</a>
+              <a href="products.php?ai=<?php echo $ai; ?>">Products</a>
 	          </li>
 	          <li>
-              <a href="#">Orders</a>
+              <a href="orders.php?ai=<?php echo $ai; ?>">Orders</a>
 	          </li>
 	        </ul>
 

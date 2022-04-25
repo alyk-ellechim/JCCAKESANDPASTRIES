@@ -168,7 +168,7 @@ if(isset($_POST['signIn'])){
 							</div>
 						</div>
 		          </form>
-		          <p class="text-center">Don't have an account? <a data-toggle="tab" href="#signup">Register</a></p>
+		          <p class="text-center">Don't have an account? <a data-toggle="tab" href="register.php">Register</a></p>
 		        </div>
 		      </div>
 				</div>

@@ -6,8 +6,4 @@ $dbName = "jccake";
 
 $mysqli = new mysqli($host, $dbUsername, $dbpass, $dbName);
 
-// if($mysqli){
-//     echo "Success";
-// }
-
 ?>

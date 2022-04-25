@@ -4,9 +4,12 @@ include 'views/admin/functions/db_Connection.php';
 session_start();
 
 if(isset($_GET['ui'])){
-    $ui = mysqli_escape_string($mysqli, $_GET['ui']);
+  $ui = mysqli_escape_string($mysqli, $_GET['ui']);
 }else{
-    $ui = "";
+  $ui = "";
+  if(isset($_SESSION['ui'])){
+    $ui = $_SESSION['ui'];
+  }
 }
 
 if(isset($_POST['addToCart'])){
@@ -31,11 +34,18 @@ if(isset($_POST['addToCart'])){
 
       $update = $mysqli->query("UPDATE cart SET userID = '$userID' , prodID = '$prodID', qty = '$totalQty' WHERE id = '$cart_id' LIMIT 1");
 
+      $_SESSION['addedToCart'] = 'true';
+      header("Location: shop.php?ui=$ui");
+      exit();
+
   }else{
       $insert = $mysqli->query("INSERT INTO cart(userID, prodID, qty) VALUES ('$userID', '$prodID', '$qty')");
+      $_SESSION['addedToCart'] = 'true';
+      header("Location: shop.php?ui=$ui");
+      exit();
   }
 
-  header("Location: shop.php?ui=$ui");
+  
 
 }
 
@@ -73,8 +83,25 @@ if(isset($_POST['addToCart'])){
               <a href="shop.php?ui=<?php echo $ui; ?>">Shop</a>
 	          </li>
 
-              <li>
-              <a href="cart.php?ui=<?php echo $ui; ?>">Cart</a>
+            <li>
+              <a href="cart.php?ui=<?php echo $ui; ?>">
+                <span class="position-relative">Cart
+                  <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger ms-2">
+                    <?php
+
+                      $userID = base64_decode($ui);
+
+                      $select_allCart = $mysqli->query("SELECT * FROM cart WHERE userID = '$userID'");
+
+                      $totalCart = mysqli_num_rows($select_allCart);
+
+                      echo $totalCart;
+
+                    ?>
+                    
+                  </span>
+                </span> 
+              </a>
 	          </li>
               
 	          <li>
@@ -188,6 +215,17 @@ if(isset($_POST['addToCart'])){
     <script src="js/popper.js"></script>
     <script src="js/bootstrap.min.js"></script>
     <script src="js/main.js"></script>
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+
+    <?php			
+      if(isset($_SESSION['addedToCart'])) {
+        echo '<script type="text/javascript">
+          swal("Success", "Product has been added to cart", "success");
+        </script>';
+        unset($_SESSION['addedToCart']);
+      } 
+
+    ?>
 
   </body>
 </html>

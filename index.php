@@ -12,6 +12,43 @@ if(isset($_GET['ui'])){
     }
 }
 
+if(isset($_POST['addToCart'])){
+  $prodID = $_POST['prod_id'];
+
+  if(isset($_POST['qty'])){
+    $qty = $_POST['qty'];
+  }else{
+    $qty = 1;
+  }
+
+  $userID = base64_decode($ui);
+
+  $select_cart = $mysqli->query("SELECT * FROM cart WHERE userID = '$userID' AND prodID = '$prodID'");
+
+  if(mysqli_num_rows($select_cart) != 0){
+      $row_cart = mysqli_fetch_array($select_cart);
+
+      $totalQty = $row_cart['qty'] + $qty;
+
+      $cart_id = $row_cart['id'];
+
+      $update = $mysqli->query("UPDATE cart SET userID = '$userID' , prodID = '$prodID', qty = '$totalQty' WHERE id = '$cart_id' LIMIT 1");
+
+      $_SESSION['addedToCart'] = 'true';
+      header("Location: index.php?ui=$ui");
+      exit();
+
+  }else{
+      $insert = $mysqli->query("INSERT INTO cart(userID, prodID, qty) VALUES ('$userID', '$prodID', '$qty')");
+      $_SESSION['addedToCart'] = 'true';
+      header("Location: index.php?ui=$ui");
+      exit();
+  }
+
+  
+
+}
+
 ?>
 <!doctype html>
 <html lang="en">
@@ -45,8 +82,25 @@ if(isset($_GET['ui'])){
               <a href="shop.php?ui=<?php echo $ui; ?>">Shop</a>
 	          </li>
 
-              <li>
-              <a href="cart.php?ui=<?php echo $ui; ?>">Cart</a>
+            <li>
+              <a href="cart.php?ui=<?php echo $ui; ?>">
+                <span class="position-relative">Cart
+                  <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger ms-2">
+                    <?php
+
+                      $userID = base64_decode($ui);
+
+                      $select_allCart = $mysqli->query("SELECT * FROM cart WHERE userID = '$userID'");
+
+                      $totalCart = mysqli_num_rows($select_allCart);
+
+                      echo $totalCart;
+
+                    ?>
+                    
+                  </span>
+                </span> 
+              </a>
 	          </li>
 
 	          <li>
@@ -111,7 +165,7 @@ if(isset($_GET['ui'])){
                     <!-- Products --> 
 
                 <?php
-                    $selectProduct = $mysqli->query("SELECT * FROM products ORDER BY id DESC LIMIT 6")
+                    $selectProduct = $mysqli->query("SELECT * FROM products ORDER BY RAND() LIMIT 6")
                     or die("Failed to query database" .mysql_error());
                     $row = mysqli_fetch_array($selectProduct);
                     $hold = "";
@@ -128,7 +182,8 @@ if(isset($_GET['ui'])){
                                 <h5 class="card-title">'.$row['name'].'</h5>
                                 <p class="card-text">'.$row['description'].'</p>
                                 <p class="card-text fs-6">&#8369; '.$row['price'].'.00</p>
-                                <form action="products.php" method="POST">
+                                <form action="index.php?ui='.$ui.'" method="POST">
+                                <input type="hidden" name="prod_id" value="'.$row['id'].'">
                                 <button type="submit" name="addToCart" value="'.$row['id'].'" class="btn text-white btn-primary">Add to Cart</button>
                                 <button type="submit" name="buyNow" value="'.$row['id'].'" class="btn btn-primary">Buy Now</button>
                                 </form>
@@ -159,5 +214,16 @@ if(isset($_GET['ui'])){
     <script src="js/popper.js"></script>
     <script src="js/bootstrap.min.js"></script>
     <script src="js/main.js"></script>
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+
+    <?php			
+      if(isset($_SESSION['addedToCart'])) {
+        echo '<script type="text/javascript">
+          swal("Success", "Product has been added to cart", "success");
+        </script>';
+        unset($_SESSION['addedToCart']);
+      } 
+
+    ?>
   </body>
 </html>

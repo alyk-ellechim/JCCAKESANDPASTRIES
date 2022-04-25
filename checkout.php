@@ -9,16 +9,84 @@ if(isset($_GET['ui'])){
     $ui = "";
 }
 
-if(isset($_POST['removeFromCart'])){
+if(isset($_POST['placeOrder'])){
+    $mop = $_POST['mop'];
+    $instruction = $_POST['instruction'];
+    $userID = base64_decode($ui);
+    $total = $_POST['total'];
+    
+    if($mop == "COD"){
+        $select_cart = $mysqli->query("SELECT * FROM cart WHERE userID = '$userID'");
 
-    $cartID = $_POST['cartID'];
+        if(mysqli_num_rows($select_cart) != 0){
+            $order_no = generateKey($mysqli);
+    
+            while($row_cart = mysqli_fetch_array($select_cart)){
+                $prodID = $row_cart['prodID'];
+                $qty = $row_cart['qty'];
+    
+                $insert = $mysqli->query("INSERT INTO order_products(order_no, prodID, qty) VALUES ('$order_no', '$prodID', '$qty')");
+            }
+    
+            $deleteCart = $mysqli->query("DELETE FROM cart WHERE userID = '$userID'");
+            if($deleteCart){
+                $insertOrders = $mysqli->query("INSERT INTO orders(order_no, userID, total_price, MOP, instruction) VALUES ('$order_no', '$userID', '$total', '$mop', '$instruction')");
+    
+                if($insertOrders){
+                    header("Location: cart.php?ui=$ui");
+                    $_SESSION['placeOrder'] = "true";
+                    exit();
+                }
+            }
+        }
 
-    $removeCart = $mysqli->query("DELETE FROM cart WHERE id = '$cartID' LIMIT 1");
-
-    if($removeCart){
+    }else{
+        //Paypal
         header("Location: cart.php?ui=$ui");
+        $_SESSION['placeOrder'] = "true";
+        exit();
     }
+
+
+
 }
+
+
+//Generate Order No
+function checkKeys($mysqli, $randStr){
+
+    $result = $mysqli->query("SELECT * FROM orders");
+    if(mysqli_num_rows($result) != 0){
+        while($row = mysqli_fetch_array($result)){
+            if($row['order_no'] == $randStr){
+                $keyExist = true;
+                break;
+            }else{
+                $keyExist = false;
+            }
+        }
+    }else{
+        $keyExist = false;    
+    }
+    return $keyExist;
+}
+
+function generateKey($mysqli){
+    $keylength = 11;
+    $str = "1234567890";
+    $randStr = substr(str_shuffle($str), 0, $keylength);
+
+
+    $checkKey = checkKeys($mysqli, $randStr);
+
+    while($checkKey == true){
+        $randStr = substr(str_shuffle($str), 0, $keylength);
+        $checkKey = checkKeys($mysqli, $randStr);
+    }
+
+    return $randStr;
+}
+//End Order No
 
 
 ?>
@@ -125,7 +193,7 @@ if(isset($_POST['removeFromCart'])){
           </div>
         </nav>
 
-        <h2 class="mb-4">Cart</h2>
+        <h2 class="mb-4">Checkout</h2>
         
         <div class="content" id="contentID">
 
@@ -156,8 +224,6 @@ if(isset($_POST['removeFromCart'])){
 
                         $total = 0;
 
-                        $checkoutBtn = "";
-
                         if(mysqli_num_rows($selectCart) != 0){
                             while($rowCart = mysqli_fetch_array($selectCart)){
                                 $prod_ID = $rowCart['prodID'];
@@ -180,19 +246,11 @@ if(isset($_POST['removeFromCart'])){
                                             
                                             <div class="product-quantity">
                                                 <input type="hidden" name="prodID" value="'.$rowCart['prodID'].'">
-                                                <input type="number" class="qty" name="qty" value="'.$rowCart['qty'].'" min="1">
+                                                <input type="number" class="qty" disabled name="qty" value="'.$rowCart['qty'].'" min="1">
                                             </div>
                     
                                             <div class="product-line-price prod_total">'.number_format($totalPrice, 2).'</div>
                     
-                                            <div class="product-removal">
-                                                <form action="cart.php?ui='.$ui.'" method="POST">
-                                                    <input type="hidden" name="cartID" value="'.$rowCart['id'].'">
-                                                    <button type="submit" name="removeFromCart" class="remove-product">
-                                                        Remove
-                                                    </button>
-                                                </form>
-                                            </div>
                                         </div>';
 
                                     $total += $totalPrice;
@@ -201,7 +259,6 @@ if(isset($_POST['removeFromCart'])){
                             }
                         }else{
                             echo '<div class="alert alert-danger">No Item in Cart <a href="shop.php?ui='.$ui.'" class="text-decoration-underline">Continue Shopping</a></div>';
-                            $checkoutBtn = 'disabled';
                         }
 
                     ?>
@@ -211,31 +268,53 @@ if(isset($_POST['removeFromCart'])){
             </div>
 
             <div class="card-footer" id="cartTotal">
-                <div class="totals">
-                    <div class="totals-item m-0 p-0">
-                        <label>Subtotal</label>
-                        <div class="totals-value" id="cart-subtotal"><?php echo number_format($total, 2); ?></div>
+
+                <form action="checkout.php?ui=<?php echo $ui; ?>" method="POST" class="d-flex justify-content-between">
+                    <div class="mop">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="mop" value="COD" id="cod" checked>
+                            <label class="form-check-label text-dark" for="cod">
+                                Cash on Deliery
+                            </label>
+                            </div>
+                            <div class="form-check">
+                            <input class="form-check-input" type="radio" name="mop" value="Paypal" id="paypal">
+                            <label class="form-check-label text-dark" for="paypal">
+                                Paypal
+                            </label>
+                        </div>
                     </div>
 
-                    <div class="totals-item m-0 p-0">
-                        <label>Delivery Fee</label>
-                        <div class="text-end">FREE</div>
+                    <div class="instruction d-flex flex-column">
+                        <label for="ins">Delivery Instruction</label>
+                        <textarea name="instruction" id="ins" cols="30" rows="4" style="resize: none;"></textarea>
                     </div>
 
-                    <div class="totals-item totals-item-total m-0 p-0">
-                        <label>Grand Total</label>
-                        <div class="totals-value" id="cart-total"><?php echo number_format($total, 2); ?></div>
+                    <div class="totalSection">
+                        <div class="totals">
+                            <div class="totals-item m-0 p-0">
+                                <label>Subtotal</label>
+                                <div class="totals-value" id="cart-subtotal"><?php echo number_format($total, 2); ?></div>
+                            </div>
+
+                            <div class="totals-item m-0 p-0">
+                                <label>Delivery Fee</label>
+                                <div class="text-end">FREE</div>
+                            </div>
+
+                            <div class="totals-item totals-item-total m-0 p-0">
+                                <label style="margin-right: 80px;">Grand Total</label>
+                                <div class="totals-value" id="cart-total"><?php echo number_format($total, 2); ?></div>
+                            </div>
+                        </div>
+
+                        <input type="hidden" name="total" value="<?php echo number_format($total, 2); ?>">
+                        
+                        <button type="submit" name="placeOrder" class="btn btn-success m-0 checkout">Place Order</button>
                     </div>
-                </div>
-                
-                <a href="checkout.php?ui=<?php echo $ui; ?>" class="btn btn-success m-0 checkout" <?php echo $checkoutBtn; ?>>Checkout</a>
+                </form>
             </div>
         </div>
-        
-
-
-
-
 
         </div>
 
@@ -248,46 +327,6 @@ if(isset($_POST['removeFromCart'])){
     <script src="js/bootstrap.min.js"></script>
     <script src="js/main.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-
-    <?php			
-      if(isset($_SESSION['placeOrder'])) {
-        echo '<script type="text/javascript">
-          swal("Thank you!", "Your order is being proccess", "success");
-        </script>';
-        unset($_SESSION['placeOrder']);
-      } 
-
-    ?>
-
-
-    <script>
-
-        $(document).on('change', '.qty', function() {
-
-            var param = new URLSearchParams(window.location.search);
-            var ui = param.get('ui');
-            var prodId  = $(this).closest('.product').find('input[name=prodID]').val();
-            var qty  = $(this).closest('.product').find('input[name=qty]').val();
-
-            $.ajax({
-                type: "POST",
-                url: "userFunctions/updateQuantity.php",
-                data: {
-                    prodID : prodId,
-                    userID : ui,
-                    Qty : qty,
-                },
-                dataType: "json",
-                encode: true,
-                }).done(function (data) {
-                    $("#myCart").load(location.href + " #myCart > *");
-                    $("#cartTotal").load(location.href + " #cartTotal > *");
-            });
-            
-        });     
-    
-
-    </script>
 
 
   </body>

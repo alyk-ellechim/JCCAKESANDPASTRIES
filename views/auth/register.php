@@ -137,6 +137,11 @@ session_start();
 
 						?>   
 
+						<div class="form-group mb-3">
+							<label class="label" for="password">Password</label>
+						<input type="password" name="password" class="form-control" placeholder="Password" required>
+						</div>
+
                         <div class="form-group mb-3">
 							<label class="label" for="password">Confirm Password</label>
 						<input type="password" name="password2" class="form-control" placeholder="Password" required>

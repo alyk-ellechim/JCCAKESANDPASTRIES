@@ -128,7 +128,7 @@ function generateKey($mysqli){
                 <a href="shop.php?ui=<?php echo $ui; ?>">Shop</a>
                 </li>
 
-                <li class="active">
+                <li>
                 <a href="cart.php?ui=<?php echo $ui; ?>">
                     <span class="position-relative">Cart
                     <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger ms-2">
@@ -149,7 +149,7 @@ function generateKey($mysqli){
                 </a>
                 </li>
                 
-                <li>
+                <li class="active">
                 <a href="orders.php?ui=<?php echo $ui; ?>">Orders</a>
                 </li>
                 </ul>
@@ -198,10 +198,18 @@ function generateKey($mysqli){
             </nav>
             
             <div class="titleHeader d-flex justify-content-between align-items-center">
-                <h2 class="mb-4">Checkout</h2>
-                <a href="cart.php?ui=<?php echo $ui; ?>" class="text-decoration-underline" style="font-size: 15pt;">Back to Cart</a>
+                <?php
+
+                    if(isset($_GET['oid'])){
+                        $order_no = base64_decode($_GET['oid']);
+                    }
+
+                ?>
+                <h2 class="mb-4">Order No: <span><?php echo $order_no; ?></span></h2>
+                <a href="orders.php?ui=<?php echo $ui; ?>" class="text-decoration-underline" style="font-size: 15pt;">Back to Orders</a>
             </div>
 
+            <div class="alert alert-success text-center text-uppercase">Received</div>
 
             <?php
                 $usID = base64_decode($ui);
@@ -241,19 +249,19 @@ function generateKey($mysqli){
 
                         <div class="row m-0">
                             <div class="form-floating mb-3 col p-0 me-2">
-                                <input type="text" class="form-control" id="floatingInput" name="name" required placeholder="Name" value="<?php echo $name; ?>">
+                                <input type="text" disabled class="form-control" id="floatingInput" name="name" required placeholder="Name" value="<?php echo $name; ?>">
                                 <label for="floatingInput">Name</label>
                             </div>
 
                             <div class="form-floating mb-3 col p-0 ms-2">
-                                <input type="text" class="form-control" id="floatingPassword" name="phone" required placeholder="Phone" value="<?php echo $phone; ?>">
+                                <input type="text" disabled class="form-control" id="floatingPassword" name="phone" required placeholder="Phone" value="<?php echo $phone; ?>">
                                 <label for="floatingPassword">Phone</label>
                             </div>
                         </div>
 
                         <div class="row m-0">
                             <div class="form-floating mb-3 p-0">
-                                <input type="text" class="form-control" id="floatingPassword" name="address" required placeholder="Address" value="<?php echo $address; ?>">
+                                <input type="text" disabled class="form-control" id="floatingPassword" name="address" required placeholder="Address" value="<?php echo $address; ?>">
                                 <label for="floatingPassword">Address</label>
                             </div>
                         </div>
@@ -264,7 +272,7 @@ function generateKey($mysqli){
 
                     <div class="card">
                         <h5 class="card-header  d-flex justify-content-between align-items-center">
-                            My Cart
+                            Products
                         </h5>
 
                         <div class="card-body text-center overflow-auto" style="height: 258px;">
@@ -282,20 +290,23 @@ function generateKey($mysqli){
 
                                 <?php
 
-                                    $userID = base64_decode($ui);
+                                    if(isset($_GET['oid'])){
+                                        $order_no = base64_decode($_GET['oid']);
+                                    }
+                                    
 
-                                    $selectCart = $mysqli->query("SELECT * FROM cart WHERE userID = '$userID'");
+                                    $selectOrderProducts = $mysqli->query("SELECT * FROM order_products WHERE order_no = '$order_no'");
 
                                     $total = 0;
 
-                                    if(mysqli_num_rows($selectCart) != 0){
-                                        while($rowCart = mysqli_fetch_array($selectCart)){
-                                            $prod_ID = $rowCart['prodID'];
+                                    if(mysqli_num_rows($selectOrderProducts) != 0){
+                                        while($rowOrderProduct = mysqli_fetch_array($selectOrderProducts)){
+                                            $prod_ID = $rowOrderProduct['prodID'];
                                             $selectProduct = $mysqli->query("SELECT * FROM products WHERE id = '$prod_ID'");
 
                                             if(mysqli_num_rows($selectProduct) != 0){
                                                 $rowProd = mysqli_fetch_array($selectProduct);
-                                                $totalPrice = $rowCart['qty'] * $rowProd['price'];
+                                                $totalPrice = $rowOrderProduct['qty'] * $rowProd['price'];
                                                 echo '<div class="product">
                                                         <div class="product-image">
                                                             <img src="product_Images/'.$rowProd['img'].'" style="height: 80px; width: 80px; object-fit: cover;">
@@ -309,8 +320,8 @@ function generateKey($mysqli){
                                                         <div class="product-price price">'.$rowProd['price'].'</div>
                                                         
                                                         <div class="product-quantity">
-                                                            <input type="hidden" name="prodID" value="'.$rowCart['prodID'].'">
-                                                            <input type="number" class="qty" disabled name="qty" value="'.$rowCart['qty'].'" min="1">
+                                                            <input type="hidden" name="prodID" value="'.$rowOrderProduct['prodID'].'">
+                                                            <input type="number" class="qty" disabled name="qty" value="'.$rowOrderProduct['qty'].'" min="1">
                                                         </div>
                                 
                                                         <div class="product-line-price prod_total">'.number_format($totalPrice, 2).'</div>
@@ -334,24 +345,13 @@ function generateKey($mysqli){
                         <div class="card-footer overflow-auto" id="cartTotal">
                             <div class="wrapper d-flex justify-content-between">
                                 <div class="mop">
-                                    <label>Choose mode of payment:</label>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="mop" value="COD" id="cod" checked>
-                                        <label class="form-check-label text-dark" for="cod">
-                                            Cash on Deliery
-                                        </label>
-                                        </div>
-                                        <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="mop" value="Paypal" id="paypal">
-                                        <label class="form-check-label text-dark" for="paypal">
-                                            Paypal
-                                        </label>
-                                    </div>
+                                    <label>Mode of payment:</label>
+                                    <p>Cash on Delivery</p>
                                 </div>
 
                                 <div class="instruction d-flex flex-column">
                                     <label for="ins">Delivery Instruction</label>
-                                    <textarea name="instruction" id="ins" cols="30" rows="4" style="resize: none;"></textarea>
+                                    <p>TEsting</p>
                                 </div>
 
                                 <div class="totalSection">
@@ -371,10 +371,7 @@ function generateKey($mysqli){
                                             <div class="totals-value" id="cart-total"><?php echo number_format($total, 2); ?></div>
                                         </div>
                                     </div>
-
-                                    <input type="hidden" name="total" value="<?php echo $total; ?>">
                                     
-                                    <button type="submit" name="placeOrder" class="btn btn-success m-0 checkout">Place Order</button>
                                 </div>
                             </div>
                         </div>

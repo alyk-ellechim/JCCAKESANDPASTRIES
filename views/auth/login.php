@@ -38,8 +38,30 @@ if(isset($_SESSION['email']) && isset($_SESSION['password'])){
 			$update = mysqli_query($mysqli, "UPDATE user set status = 1 WHERE id = '$ui'");
 		
 			if($update){
-			  header("Location: ../../index.php?ui=$id");
-			  $_SESSION['ui'] = $id;
+
+			  $check_cart = mysqli_query($mysqli, "SELECT * FROM cart WHERE userID = 0");
+
+			  if(mysqli_num_rows($check_cart) != 0){
+				$count = 0;
+				while($cart_row = mysqli_fetch_array($check_cart)){
+					$cart_id = $cart_row['id'];
+
+					$update_cart = mysqli_query($mysqli, "UPDATE cart set userID = '$ui' WHERE id = '$cart_id'");
+
+					if($update_cart){
+						$count = $count + 1;
+					}
+				}
+
+				if($count == mysqli_num_rows($check_cart)){
+					header("Location: ../../index.php?ui=$id");
+					$_SESSION['ui'] = $id;
+				}
+
+				
+			  }
+
+			  
 			}
 		}
 	
@@ -86,11 +108,21 @@ if(isset($_POST['signIn'])){
 			$update = mysqli_query($mysqli, "UPDATE user set status = 1 WHERE id = '$ui'");
 		
 			if($update){
-			  header("Location: ../../index.php?ui=$id");
+				$check_cart = mysqli_query($mysqli, "SELECT * FROM cart WHERE userID = 0");
+
+				if(mysqli_num_rows($check_cart) != 0){
+					while($cart_row = mysqli_fetch_array($check_cart)){
+						$cart_id = $cart_row['id'];
+
+						$update_cart = mysqli_query($mysqli, "UPDATE cart set userID = '$ui' WHERE id = '$cart_id'");
+					}
+				}
+
+				header("Location: ../../index.php?ui=$id");
 				$_SESSION['email'] = $email;
 				$_SESSION['password'] = $password;
 				$_SESSION['ui'] = $id;
-			}
+	}
 		}
 	
 		}else{

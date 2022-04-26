@@ -16,6 +16,7 @@ if(isset($_GET['ui']) || isset($_SESSION['ui'])){
     if($logout){
         unset($_SESSION['email']);
         unset($_SESSION['password']);
+        unset($_SESSION['ui']);
         header("Location: login.php");
     }
 }elseif(isset($_GET['ai']) || isset($_SESSION['ui'])){
@@ -32,6 +33,7 @@ if(isset($_GET['ui']) || isset($_SESSION['ui'])){
     if($logout){
         unset($_SESSION['email']);
         unset($_SESSION['password']);
+        unset($_SESSION['ai']);
         header("Location: login.php");
     }
 }

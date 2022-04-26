@@ -72,9 +72,6 @@
     color: #aaa;
   }
   
-  .shopping-cart {
-    margin-top: -45px;
-  }
   
   /* Column headers */
   .column-labels label {
@@ -82,11 +79,7 @@
     margin-bottom: 15px;
     border-bottom: 1px solid #eee;
   }
-  .column-labels .product-image,
-  .column-labels .product-details,
-  .column-labels .product-removal {
-    text-indent: -9999px;
-  }
+
   
   /* Product entries */
   .product {

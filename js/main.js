@@ -15,6 +15,8 @@
 	$('#sidebarCollapse').on('click', function () {
       $('#sidebar').toggleClass('active');
 	  $('#contentID').toggleClass('contentActive');
+	  $('#content').toggleClass('hideSidebar');
+	  $('#toggleBtn').toggleClass('toggleBtn');
   });
 
 })(jQuery);

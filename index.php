@@ -104,7 +104,7 @@ if(isset($_POST['addToCart'])){
 	          </li>
 
 	          <li>
-              <a href="#">Orders</a>
+              <a href="orders.php?ui=<?php echo $ui; ?>">Orders</a>
 	          </li>
 	        </ul>
 
@@ -185,7 +185,6 @@ if(isset($_POST['addToCart'])){
                                 <form action="index.php?ui='.$ui.'" method="POST">
                                 <input type="hidden" name="prod_id" value="'.$row['id'].'">
                                 <button type="submit" name="addToCart" value="'.$row['id'].'" class="btn text-white btn-primary">Add to Cart</button>
-                                <button type="submit" name="buyNow" value="'.$row['id'].'" class="btn btn-primary">Buy Now</button>
                                 </form>
                             </div>
                         </div>';

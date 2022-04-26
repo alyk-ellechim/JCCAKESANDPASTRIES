@@ -12,44 +12,6 @@ if(isset($_GET['ui'])){
   }
 }
 
-if(isset($_POST['addToCart'])){
-  $prodID = $_POST['prod_id'];
-
-  if(isset($_POST['qty'])){
-    $qty = $_POST['qty'];
-  }else{
-    $qty = 1;
-  }
-
-  $userID = base64_decode($ui);
-
-  $select_cart = $mysqli->query("SELECT * FROM cart WHERE userID = '$userID' AND prodID = '$prodID'");
-
-  if(mysqli_num_rows($select_cart) != 0){
-      $row_cart = mysqli_fetch_array($select_cart);
-
-      $totalQty = $row_cart['qty'] + $qty;
-
-      $cart_id = $row_cart['id'];
-
-      $update = $mysqli->query("UPDATE cart SET userID = '$userID' , prodID = '$prodID', qty = '$totalQty' WHERE id = '$cart_id' LIMIT 1");
-
-      $_SESSION['addedToCart'] = 'true';
-      header("Location: shop.php?ui=$ui");
-      exit();
-
-  }else{
-      $insert = $mysqli->query("INSERT INTO cart(userID, prodID, qty) VALUES ('$userID', '$prodID', '$qty')");
-      $_SESSION['addedToCart'] = 'true';
-      header("Location: shop.php?ui=$ui");
-      exit();
-  }
-
-  
-
-}
-
-
 ?>
 <!doctype html>
 <html lang="en">
@@ -79,7 +41,7 @@ if(isset($_POST['addToCart'])){
 	              <a href="index.php?ui=<?php echo $ui; ?>">Home</a>
 	          </li>
 
-	          <li class="active">
+	          <li>
               <a href="shop.php?ui=<?php echo $ui; ?>">Shop</a>
 	          </li>
 
@@ -104,7 +66,7 @@ if(isset($_POST['addToCart'])){
               </a>
 	          </li>
               
-	          <li>
+	          <li class="active">
               <a href="orders.php?ui=<?php echo $ui; ?>">Orders</a>
 	          </li>
 	        </ul>
@@ -153,51 +115,59 @@ if(isset($_POST['addToCart'])){
           </div>
         </nav>
 
-        <h2 class="mb-4">Shop</h2>
+        <h2 class="mb-4">Orders</h2>
         
         <div class="content" id="contentID">
 
         <div class="card">
             <h5 class="card-header  d-flex justify-content-between align-items-center">
-                All Products
+                Order List
             </h5>
             <div class="card-body text-center overflow-auto" style="height: 410px;">
-                <!-- Products --> 
+                <!-- Orders --> 
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Order No.</th>
+                        <th scope="col">Price</th>
+                        <th scope="col">Date Ordered</th>
+                        <th scope="col">Action</th>
+                        </tr>
+                    </thead>
 
-            <?php
-                $selectProduct = $mysqli->query("SELECT * FROM products")
-                or die("Failed to query database" .mysql_error());
-                $row = mysqli_fetch_array($selectProduct);
-                $hold = "";
-                    
-                if(mysqli_num_rows($selectProduct) == 0){
-                    echo "<tr>
-                    <td class='tm-product-name'>No Product Available</td></tr>"; 
-                                    
-                }else{
-                    do{
-                        $new_product = '<div class="card d-inline-block my-sm-4 mx-sm-2 text-start" style="width: 18rem; ">
-                        <img src="product_Images/'.$row['img'].'" class="card-img-top" alt="Product Image" style="height: 150px; width: 100%; object-fit: cover;">
-                        <div class="card-body">
-                            <h5 class="card-title">'.$row['name'].'</h5>
-                            <p class="card-text">'.$row['description'].'</p>
-                            <p class="card-text fs-6">&#8369; '.$row['price'].'.00</p>
-                            <form action="shop.php?ui='.$ui.'" method="POST">
-                            <input type="hidden" name="prod_id" value="'.$row['id'].'">
-                            <button type="submit" name="addToCart" value="'.$row['id'].'" class="btn text-white btn-primary">Add to Cart</button>
-                            </form>
-                        </div>
-                    </div>';
-                        $hold = $new_product . $hold;
-                        $display_all = $hold;
-                    }while($row = mysqli_fetch_array($selectProduct));
+                    <tbody>
+
+                        <?php
+                            $userID = base64_decode($ui);
+                            $select_orders = $mysqli->query("SELECT * FROM orders WHERE userID = '$userID'");
+
+                            if(mysqli_num_rows($select_orders) != 0){
+                                $counter = 0;
+                                while($row_orders = mysqli_fetch_array($select_orders)){
+                                    $counter += 1;
+
+                                    $time = strtotime($row_orders['date_ordered']);
+                                    $date_ordered = date("m/d/y g:i A", $time);
+
+                                    $total_price = $row_orders['total_price'];
+
+
+                                    echo '<tr>
+                                            <th scope="row">'.$counter.'</th>
+                                            <td>'.$row_orders['order_no'].'</td>
+                                            <td>&#8369;'.number_format($total_price, 2).'</td>
+                                            <td>'.$date_ordered.'</td>
+                                            <td><a href="order_products.php?ui='.$ui.'&oid='.base64_encode($row_orders['order_no']).'" class="btn btn-primary btn-sm">View</a></td>
+                                        </tr>';
+                                }
+                            }
+
+                        ?>
                         
-                    echo $display_all;
-                }         
-            ?>
 
-          
-                
+                    </tbody>
+                </table>
 
 
             </div>
@@ -215,16 +185,6 @@ if(isset($_POST['addToCart'])){
     <script src="js/bootstrap.min.js"></script>
     <script src="js/main.js"></script>
     <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
-
-    <?php			
-      if(isset($_SESSION['addedToCart'])) {
-        echo '<script type="text/javascript">
-          swal("Success", "Product has been added to cart", "success");
-        </script>';
-        unset($_SESSION['addedToCart']);
-      } 
-
-    ?>
 
   </body>
 </html>

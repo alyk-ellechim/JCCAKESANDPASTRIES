@@ -77,7 +77,7 @@ if(isset($_POST['removeFromCart'])){
 	          </li>
               
 	          <li>
-              <a href="#">Orders</a>
+              <a href="orders.php?ui=<?php echo $ui; ?>">Orders</a>
 	          </li>
 	        </ul>
 
@@ -201,7 +201,7 @@ if(isset($_POST['removeFromCart'])){
                             }
                         }else{
                             echo '<div class="alert alert-danger">No Item in Cart <a href="shop.php?ui='.$ui.'" class="text-decoration-underline">Continue Shopping</a></div>';
-                            $checkoutBtn = 'disabled';
+                            $checkoutBtn = 'style="pointer-events: none; opacity: 50%;"';
                         }
 
                     ?>
@@ -227,8 +227,19 @@ if(isset($_POST['removeFromCart'])){
                         <div class="totals-value" id="cart-total"><?php echo number_format($total, 2); ?></div>
                     </div>
                 </div>
+
+
+                <?php
+
+                    if($ui != ""){
+                        echo '<a href="checkout.php?ui='.$ui.'" class="btn btn-success m-0 checkout" '.$checkoutBtn.'>Checkout</a>';
+                    }else{
+                        echo '<a href="views/auth/login.php" class="btn btn-success m-0 checkout" '.$checkoutBtn.'>Checkout</a>';
+                    }
+
+                ?>
                 
-                <a href="checkout.php?ui=<?php echo $ui; ?>" class="btn btn-success m-0 checkout" <?php echo $checkoutBtn; ?>>Checkout</a>
+                
             </div>
         </div>
         
@@ -248,6 +259,7 @@ if(isset($_POST['removeFromCart'])){
     <script src="js/bootstrap.min.js"></script>
     <script src="js/main.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
 
     <?php			
       if(isset($_SESSION['placeOrder'])) {

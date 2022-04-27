@@ -6,7 +6,7 @@ session_start();
 if(isset($_GET['ai'])){
   $ai = mysqli_escape_string($mysqli, $_GET['ai']);
 }
-
+ 
 if(isset($_POST['addProduct'])){
 
   $name = $_POST['name'];

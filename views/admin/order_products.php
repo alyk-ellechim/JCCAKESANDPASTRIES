@@ -14,16 +14,16 @@ if(isset($_GET['ai'])){
 if(isset($_POST['saveStatus'])){
     $order_status = $_POST['status'];
 
-    if(isset($_GET['oid'])){
+    if(isset($_GET['oid'])){  
         $on = base64_decode($_GET['oid']);
         $oid = $_GET['oid'];
     }
-<<<<<<< HEAD
-          
-=======
+
+             
+
 
     $update_status = $mysqli->query("UPDATE orders SET status = '$order_status' WHERE order_no = '$on'");
->>>>>>> 7d7b0a2b107cc38c2510190d885d1faae9abb8b4
+
 
     if($update_status){
         $_SESSION['statusUpdated'] = "true";

@@ -198,5 +198,17 @@ if(isset($_GET['ui'])){
     <script src="js/main.js"></script>
     <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
 
+
+    <?php
+    
+      if(isset($_SESSION['cancel'])) {
+        echo '<script type="text/javascript">
+          swal("Success!", "Order Canceled", "success");
+        </script>';
+        unset($_SESSION['cancel']);
+      }
+
+    ?>
+
   </body>
 </html>

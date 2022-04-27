@@ -27,6 +27,15 @@ if(isset($_POST['received'])){
         header("Location: order_products.php?ui=".$ui."&oid=".$oid."");
         exit();
     }
+}elseif(isset($_POST['cancel'])){
+
+    $delete_order = $mysqli->query("DELETE FROM orders WHERE order_no = '$on'");
+
+    if($delete_order){
+        $_SESSION['cancel'] = "true";
+        header("Location: orders.php?ui=".$ui."");
+        exit();
+    }
 }
 
 ?>
@@ -318,8 +327,16 @@ if(isset($_POST['received'])){
 
                                         <?php if($status == 'Out for delivery'){ ?>
 
-                                            <form action="order_products.php?ui=<?php echo $ui; ?>&oid=<?php echo $oid; ?>" method="post"POST">
+                                            <form action="order_products.php?ui=<?php echo $ui; ?>&oid=<?php echo $oid; ?>" method="POST">
                                                 <button type="submit" name="received" class="btn btn-success m-0 checkout">Received</button>
+                                            </form>
+
+                                        <?php } ?>
+
+                                        <?php if($status == 'Pending'){ ?>
+
+                                            <form action="order_products.php?ui=<?php echo $ui; ?>&oid=<?php echo $oid; ?>" method="POST">
+                                                <button type="submit" name="cancel" class="btn btn-danger m-0 checkout">Cancel</button>
                                             </form>
 
                                         <?php } ?>
@@ -349,7 +366,7 @@ if(isset($_POST['received'])){
           swal("Success!", "Order Received", "success");
         </script>';
         unset($_SESSION['received']);
-      } 
+      }
 
     ?>
 

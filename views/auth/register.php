@@ -1,6 +1,7 @@
 <?php
 
 include '../admin/functions/db_Connection.php';
+include('../../smtp/PHPMailerAutoload.php');
 session_start();
 
     if(isset($_POST['register'])){
@@ -29,8 +30,6 @@ session_start();
         if(strlen($name) < 2){
             $_SESSION['name_feedback'] = '<p id="error">Firstname must be atleast 2 characters!</p>';
         
-        }else if(!ctype_alpha($name)){
-            $_SESSION['name_feedback'] = '<p id="error">Please use alphabetical characters only!</p>';
         }
 
         if(strlen($password) < 8) {
@@ -55,19 +54,47 @@ session_start();
             $insert_account = $mysqli->query("INSERT INTO user(name, email, password, vkey) VALUES ('$name', '$email', '$password', '$vkey')");
     
             if($insert_account){
-               // $message = "<a href='vkey=$vkey'>Verify Account";
-               // smtp_mailer($email, 'Email Verification', $message); 
+               $message = "<a href='http://localhost/JCCAKESANDPASTRIES/views/auth/verify_account.php?vkey=$vkey'>Verify Account";
+               smtp_mailer($email, 'Email Verification', $message); 
                 unset($_SESSION['name_input']);
                 unset($_SESSION['email_input']);
                 unset($_SESSION['password_input']);
-                echo '<script>alert("Registration Successful. Please verify your account.")</script>';
+                echo '<script>alert("Registration Successful. Please verify your account at '.$email.'")</script>';
             }else{
-                header("Location: register.php");
+                header("Location: login.php");
             }
         }
 
 }
 
+
+function smtp_mailer($to,$subject, $msg){
+	$mail = new PHPMailer(true);
+	//$mail->SMTPDebug = 1;
+	$mail->IsSMTP();
+	$mail->SMTPAuth = true;
+	$mail->SMTPSecure = 'tls';
+	$mail->Host = "smtp.gmail.com";
+	$mail->Port = 587;
+	$mail->isHTML(true);
+	$mail->CharSet = 'UTF-8';
+	$mail->Username = "smtpjccakesandpastries@gmail.com"; 
+	$mail->Password = "qwerty12345!@#$%";
+	$mail->SetFrom("smtpjccakesandpastries@gmail.com");
+	$mail->Subject = $subject;
+	$mail->Body = $msg;
+	$mail->AddAddress($to);
+	$mail->SMTPOptions=array('ssl'=>array(
+		'verify_peer'=>false,
+		'verify_peer_name'=>false,
+		'allow_self_signed'=>false
+	));
+	if(!$mail->Send()){
+		return 0;
+	}else{
+		return 1;
+	}
+}
 
 ?>
 <!doctype html>
@@ -114,7 +141,7 @@ session_start();
 
                     <div class="form-group mb-3">
 			      			<label class="label" for="name">Name</label>
-			      			<input type="text" name="name" class="form-control" placeholder="Email" required>
+			      			<input type="text" name="name" class="form-control" placeholder="Name" required>
                               <?php
 
 							if(isset($_SESSION['name_feedback'])){
@@ -130,9 +157,9 @@ session_start();
 			      			<input type="email" name="email" class="form-control" placeholder="Email" required>
                               <?php
 
-							if(isset($_SESSION['name_feedback'])){
-								echo $_SESSION['name_feedback'];
-								unset($_SESSION['name_feedback']);
+							if(isset($_SESSION['email_feedback'])){
+								echo $_SESSION['email_feedback'];
+								unset($_SESSION['email_feedback']);
 							}
 
 						?>   
@@ -162,7 +189,7 @@ session_start();
 						</div>
 						
 		          </form>
-		          <p class="text-center">Already have an account? <a data-toggle="tab" href="login.php">Login</a></p>
+		          <p class="text-center">Already have an account? <a href="login.php">Login</a></p>
 		        </div>
 		      </div>
 				</div>
@@ -170,10 +197,10 @@ session_start();
 		</div>
 	</section>
 
-	<script src="js/jquery.min.js"></script>
-  <script src="js/popper.js"></script>
-  <script src="js/bootstrap.min.js"></script>
-  <script src="js/main.js"></script>
+	<script src="../../js/jquery.min.js"></script>
+  <script src="../../js/popper.js"></script>
+  <script src="../../js/bootstrap.min.js"></script>
+  <script src="../../js/main.js"></script>
 
 	</body>
 </html>

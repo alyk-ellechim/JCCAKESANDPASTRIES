@@ -9,89 +9,24 @@ if(isset($_GET['ai'])){
     $ai = "";
 }
 
-if(isset($_POST['placeOrder'])){
-    $mop = $_POST['mop'];
-    $instruction = $_POST['instruction'];
-    $name = $_POST['name'];
-    $address = $_POST['address'];
-    $phone = $_POST['phone'];
-    $userID = base64_decode($ai);
-    $total = $_POST['total'];
-    
-    if($mop == "COD"){
-        $select_cart = $mysqli->query("SELECT * FROM cart WHERE userID = '$userID'");
 
-        if(mysqli_num_rows($select_cart) != 0){
-            $order_no = generateKey($mysqli);
-    
-            while($row_cart = mysqli_fetch_array($select_cart)){
-                $prodID = $row_cart['prodID'];
-                $qty = $row_cart['qty'];
-    
-                $insert = $mysqli->query("INSERT INTO order_products(order_no, prodID, qty) VALUES ('$order_no', '$prodID', '$qty')");
-            }
-    
-            $deleteCart = $mysqli->query("DELETE FROM cart WHERE userID = '$userID'");
 
-            $updateContact = $mysqli->query("UPDATE user SET name = '$name', address = '$address', phone = '$phone' WHERE id = '$userID'");
+if(isset($_POST['saveStatus'])){
+    $order_status = $_POST['status'];
 
-            if($deleteCart){
-                $insertOrders = $mysqli->query("INSERT INTO orders(order_no, userID, total_price, MOP, instruction) VALUES ('$order_no', '$userID', '$total', '$mop', '$instruction')");
-    
-                if($insertOrders){
-                    $_SESSION['placeOrder'] = "true";
-                    header("Location: cart.php?ai=$ai");
-                }
-            }
-        }
+    if(isset($_GET['oid'])){
+        $on = base64_decode($_GET['oid']);
+        $oid = $_GET['oid'];
+    }
 
-    }else{
-        //Paypal
-        header("Location: cart.php?ai=$ai");
-        $_SESSION['placeOrder'] = "true";
+    $update_status = $mysqli->query("UPDATE orders SET status = '$order_status' WHERE order_no = '$on'");
+
+    if($update_status){
+        $_SESSION['statusUpdated'] = "true";
+        header("Location: order_products.php?ai=".$ai."&oid=".$oid."");
         exit();
     }
-
-
-
 }
-
-
-//Generate Order No
-function checkKeys($mysqli, $randStr){
-
-    $result = $mysqli->query("SELECT * FROM orders");
-    if(mysqli_num_rows($result) != 0){
-        while($row = mysqli_fetch_array($result)){
-            if($row['order_no'] == $randStr){
-                $keyExist = true;
-                break;
-            }else{
-                $keyExist = false;
-            }
-        }
-    }else{
-        $keyExist = false;    
-    }
-    return $keyExist;
-}
-
-function generateKey($mysqli){
-    $keylength = 11;
-    $str = "1234567890";
-    $randStr = substr(str_shuffle($str), 0, $keylength);
-
-
-    $checkKey = checkKeys($mysqli, $randStr);
-
-    while($checkKey == true){
-        $randStr = substr(str_shuffle($str), 0, $keylength);
-        $checkKey = checkKeys($mysqli, $randStr);
-    }
-
-    return $randStr;
-}
-//End Order No
 
 
 ?>
@@ -128,7 +63,7 @@ function generateKey($mysqli){
               <a href="products.php?ai=<?php echo $ai; ?>">Products</a>
 	          </li>
 	          <li class="active">
-              <a href="orders.php?ai=<?php echo $ai; ?>">Orders</a>
+              <a href="orders.php?ai=<?php echo $ai; ?>&st=NA==">Orders</a>
 	          </li>
 	        </ul>
 
@@ -177,10 +112,22 @@ function generateKey($mysqli){
                 <a href="orders.php?ai=<?php echo $ai; ?>" class="text-decoration-underline" style="font-size: 15pt;">Back to Orders</a>
             </div>
 
-            <div class="alert alert-success text-center text-uppercase">Received</div>
-
             <?php
-                $usID = base64_decode($ai);
+                $selectCartUser = $mysqli->query("SELECT * FROM orders WHERE order_no = '$order_no'");
+                $rowUserID = mysqli_fetch_array($selectCartUser);
+
+                if($rowUserID['status'] == 0){
+                    $status = 'Pending';
+                }else if($rowUserID['status'] == 1){
+                    $status = 'Processing';
+                }else if($rowUserID['status'] == 2){
+                    $status = 'Out for delivery';
+                }else if($rowUserID['status'] == 3){
+                    $status = 'Received';
+                }
+
+
+                $usID = $rowUserID['userID'];
                 $select_user = $mysqli->query("SELECT * FROM user WHERE id = '$usID'");
 
                 if(mysqli_num_rows($select_user) != 0){
@@ -202,15 +149,15 @@ function generateKey($mysqli){
                         $phone = "";
                     }
                 }
-
+  
                 
 
             ?>
+
+            <div class="alert alert-success text-center text-uppercase"><?php echo $status; ?></div>
             
             
             <div class="content" id="contentID">
-
-                <form action="checkout.php?ai=<?php echo $ai; ?>" method="POST">
 
                     <div class="contact">
                         <label>Contact Details</label>
@@ -336,6 +283,8 @@ function generateKey($mysqli){
                                             <label style="margin-right: 80px;">Grand Total</label>
                                             <div class="totals-value" id="cart-total"><?php echo number_format($total, 2); ?></div>
                                         </div>
+
+                                        <button type="button" name="update_status" class="btn btn-success m-0 checkout" data-bs-toggle="modal" data-bs-target="#updateStatus">Update Status</button>
                                     </div>
                                     
                                 </div>
@@ -343,19 +292,62 @@ function generateKey($mysqli){
                         </div>
                     </div>
 
-                </form>
-
             </div>
 
         </div>
     
     </div>
 
-    <script src="../js/jquery.min.js"></script>
-    <script src="../js/popper.js"></script>
-    <script src="../js/bootstrap.min.js"></script>
-    <script src="../js/main.js"></script>
+    <?php
+
+        if(isset($_GET['oid'])){
+            $oid = $_GET['oid'];
+        }
+    ?>
+
+    <!-- Update Status Modal -->
+    <div class="modal fade" id="updateStatus" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="order_products.php?ai=<?php echo $ai; ?>&oid=<?php echo $oid; ?>" method="POST">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Update Status</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-dark fs-6 m-0 p-0">Status</p>
+                    <select class="form-select" name="status" aria-label="Default select example">
+                        <option selected disabled>Select Status</option>
+                        <option value="0">Pending</option>
+                        <option value="1">Processing</option>
+                        <option value="2">Out for delivery</option>
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" name="saveStatus" class="btn btn-success">Save changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    </div>
+
+    <script src="../../js/jquery.min.js"></script>
+    <script src="../../js/popper.js"></script>
+    <script src="../../js/bootstrap.min.js"></script>
+    <script src="../../js/main.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+
+    <?php			
+      if(isset($_SESSION['statusUpdated'])) {
+        echo '<script type="text/javascript">
+          swal("Success!", "Status Updated", "success");
+        </script>';
+        unset($_SESSION['statusUpdated']);
+      } 
+
+    ?>
 
 
   </body>

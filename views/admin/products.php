@@ -133,7 +133,7 @@ if(isset($_POST['delProductBtn'])){
               <a href="products.php?ai=<?php echo $ai; ?>">Products</a>
 	          </li>
 	          <li>
-              <a href="orders.php?ai=<?php echo $ai; ?>">Orders</a>
+              <a href="orders.php?ai=<?php echo $ai; ?>&st=NA==">Orders</a>
 	          </li>
 	        </ul>
 

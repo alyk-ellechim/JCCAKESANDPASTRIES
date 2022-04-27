@@ -115,14 +115,16 @@ if(isset($_GET['ui'])){
           </div>
         </nav>
 
-        <h2 class="mb-4">Orders</h2>
+        <div class="titleHeader d-flex justify-content-between align-items-center">
+                <h2 class="mb-4">Order History</h2>
+                <a href="orders.php?ui=<?php echo $ui; ?>" class="text-decoration-underline" style="font-size: 15pt;">Back to Orders</a>
+            </div>
         
         <div class="content" id="contentID">
 
         <div class="card">
-            <h5 class="card-header d-flex justify-content-between align-items-center">
-                <span>Order List</span>
-                <span><a href="order_history.php?ui=<?php echo $ui; ?>" class="text-decoration-underline">Order History</a></span>
+            <h5 class="card-header  d-flex justify-content-between align-items-center">
+                Order List
             </h5>
             <div class="card-body text-center overflow-auto" style="height: 410px;">
                 <!-- Orders --> 
@@ -142,7 +144,7 @@ if(isset($_GET['ui'])){
 
                         <?php
                             $userID = base64_decode($ui);
-                            $select_orders = $mysqli->query("SELECT * FROM orders WHERE userID = '$userID'");
+                            $select_orders = $mysqli->query("SELECT * FROM orders WHERE userID = '$userID' AND status = 3");
 
                             if(mysqli_num_rows($select_orders) != 0){
                                 $counter = 0;
@@ -153,25 +155,20 @@ if(isset($_GET['ui'])){
                                     $date_ordered = date("m/d/y g:i A", $time);
 
                                     $total_price = $row_orders['total_price'];
-
-                                    if($row_orders['status'] == 0){
-                                      $status = 'Pending';
-                                    }else if($row_orders['status'] == 1){
-                                      $status = 'Processing';
-                                    }else if($row_orders['status'] == 2){
-                                      $status = 'Out for delivery';
+                                    
+                                    if($row_orders['status'] == 3){
+                                      $status = 'Received';
                                     }
 
-                                    if($row_orders['status'] != 3){
-                                      echo '<tr>
-                                              <th scope="row">'.$counter.'</th>
-                                              <td>'.$row_orders['order_no'].'</td>
-                                              <td>&#8369;'.number_format($total_price, 2).'</td>
-                                              <td>'.$date_ordered.'</td>
-                                              <td>'.$status.'</td>
-                                              <td><a href="order_products.php?ui='.$ui.'&oid='.base64_encode($row_orders['order_no']).'" class="btn btn-primary btn-sm">View</a></td>
-                                          </tr>';
-                                  }
+
+                                    echo '<tr>
+                                            <th scope="row">'.$counter.'</th>
+                                            <td>'.$row_orders['order_no'].'</td>
+                                            <td>&#8369;'.number_format($total_price, 2).'</td>
+                                            <td>'.$date_ordered.'</td>
+                                            <td>'.$status.'</td>
+                                            <td><a href="order_products.php?ui='.$ui.'&oid='.base64_encode($row_orders['order_no']).'" class="btn btn-primary btn-sm">View</a></td>
+                                        </tr>';
                                 }
                             }
 

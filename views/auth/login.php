@@ -187,6 +187,18 @@ if(isset($_POST['signIn'])){
 						<div class="form-group">
 							<button type="submit" name="signIn" class="form-control btn btn-primary rounded submit px-3">Login</button>
 						</div>
+
+						<?php
+
+							if(isset($_SESSION['verified'])){
+								echo '<p class="text-center p-0 m-0 text-success" style="font-size: 10pt;">Account has been verified</p>';
+								unset($_SESSION['verified']);
+							}
+
+
+						?>
+
+
 						<div class="form-group d-md-flex">
 							<div class="text-md-right">
 								<a href="#">Forgot Password</a>

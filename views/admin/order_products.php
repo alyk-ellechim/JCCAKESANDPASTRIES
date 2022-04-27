@@ -108,7 +108,7 @@ if(isset($_POST['saveStatus'])){
 
                 ?>
                 <h2 class="mb-4">Order No: <span><?php echo $order_no; ?></span></h2>
-                <a href="orders.php?ai=<?php echo $ai; ?>" class="text-decoration-underline" style="font-size: 15pt;">Back to Orders</a>
+                <a href="orders.php?ai=<?php echo $ai; ?>&st=NA==" class="text-decoration-underline" style="font-size: 15pt;">Back to Orders</a>
             </div>
 
             <?php
@@ -147,6 +147,17 @@ if(isset($_POST['saveStatus'])){
                     }else{
                         $phone = "";
                     }
+
+
+                    
+
+                    if($rowUserID['MOP'] == 'COD'){
+                        $mop = 'Cash on delivery';
+                    }else{
+                        $mop = 'Paypal';
+                    }
+
+                    $instruction = $rowUserID['instruction'];
                 }
   
                 
@@ -258,12 +269,12 @@ if(isset($_POST['saveStatus'])){
                             <div class="wrapper d-flex justify-content-between">
                                 <div class="mop">
                                     <label>Mode of payment:</label>
-                                    <p>Cash on Delivery</p>
+                                    <p><?php echo $mop; ?></p>
                                 </div>
 
                                 <div class="instruction d-flex flex-column">
                                     <label for="ins">Delivery Instruction</label>
-                                    <p>TEsting</p>
+                                    <p><?php echo $instruction; ?></p>
                                 </div>
 
                                 <div class="totalSection">

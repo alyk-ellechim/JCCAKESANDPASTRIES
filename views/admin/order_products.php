@@ -21,7 +21,7 @@ if(isset($_POST['saveStatus'])){
 
              
 
-
+  
     $update_status = $mysqli->query("UPDATE orders SET status = '$order_status' WHERE order_no = '$on'");
 
 

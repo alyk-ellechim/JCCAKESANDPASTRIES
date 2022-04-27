@@ -9,22 +9,20 @@ if(isset($_GET['ai'])){
     $ai = "";
 }
 
-
-
 if(isset($_POST['saveStatus'])){
     $order_status = $_POST['status'];
 
-    if(isset($_GET['oid'])){
+    if(isset($_GET['oid'])){  
         $on = base64_decode($_GET['oid']);
         $oid = $_GET['oid'];
     }
- 
+
     $update_status = $mysqli->query("UPDATE orders SET status = '$order_status' WHERE order_no = '$on'");
 
     if($update_status){
         $_SESSION['statusUpdated'] = "true";
         header("Location: order_products.php?ai=".$ai."&oid=".$oid."");
-        exit();
+        exit();  
     }
 }
 

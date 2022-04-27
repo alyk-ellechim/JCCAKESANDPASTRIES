@@ -18,7 +18,7 @@ if(isset($_POST['saveStatus'])){
         $on = base64_decode($_GET['oid']);
         $oid = $_GET['oid'];
     }
-
+ 
     $update_status = $mysqli->query("UPDATE orders SET status = '$order_status' WHERE order_no = '$on'");
 
     if($update_status){

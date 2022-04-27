@@ -146,10 +146,7 @@ if(isset($_POST['saveStatus'])){
                         $phone = $rowUse['phone'];
                     }else{
                         $phone = "";
-                    }
-
-
-                    
+                    }  
 
                     if($rowUserID['MOP'] == 'COD'){
                         $mop = 'Cash on delivery';

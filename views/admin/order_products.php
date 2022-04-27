@@ -17,6 +17,7 @@ if(isset($_POST['saveStatus'])){
         $oid = $_GET['oid'];
     }
 
+
     $update_status = $mysqli->query("UPDATE orders SET status = '$order_status' WHERE order_no = '$on'");
 
     if($update_status){

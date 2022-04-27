@@ -4,8 +4,6 @@ session_start();
 
 // Session
 if(isset($_SESSION['email']) && isset($_SESSION['password'])){
-	echo $_SESSION['email'];
-	echo $_SESSION['password'];
 	$email = $_SESSION['email'];
 	$password = $_SESSION['password'];
 
@@ -20,6 +18,7 @@ if(isset($_SESSION['email']) && isset($_SESSION['password'])){
 		  	header("Location: ../admin/dashboard.php?ai=$aid");
 			// echo "Admin Login";
 			$_SESSION['ai'] = $aid;
+			exit();
 
 		}
 

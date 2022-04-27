@@ -1,12 +1,12 @@
 <?php
 
-include 'views/admin/functions/db_Connection.php'; 
+include 'functions/db_Connection.php'; 
 session_start();
 
-if(isset($_GET['ui'])){
-    $ui = mysqli_escape_string($mysqli, $_GET['ui']);
+if(isset($_GET['ai'])){
+    $ai = mysqli_escape_string($mysqli, $_GET['ai']);
 }else{
-    $ui = "";
+    $ai = "";
 }
 
 if(isset($_POST['placeOrder'])){
@@ -15,7 +15,7 @@ if(isset($_POST['placeOrder'])){
     $name = $_POST['name'];
     $address = $_POST['address'];
     $phone = $_POST['phone'];
-    $userID = base64_decode($ui);
+    $userID = base64_decode($ai);
     $total = $_POST['total'];
     
     if($mop == "COD"){
@@ -40,14 +40,14 @@ if(isset($_POST['placeOrder'])){
     
                 if($insertOrders){
                     $_SESSION['placeOrder'] = "true";
-                    header("Location: cart.php?ui=$ui");
+                    header("Location: cart.php?ai=$ai");
                 }
             }
         }
 
     }else{
         //Paypal
-        header("Location: cart.php?ui=$ui");
+        header("Location: cart.php?ai=$ai");
         $_SESSION['placeOrder'] = "true";
         exit();
     }
@@ -109,73 +109,41 @@ function generateKey($mysqli){
     <link href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,800,900" rel="stylesheet">
 		
 		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-		<link rel="stylesheet" href="css/cart.css">
-        <link rel="stylesheet" href="css/style.css">
+		<link rel="stylesheet" href="../../css/cart.css">
+        <link rel="stylesheet" href="../../css/style.css">
   </head>
   <body>
 		
     <div class="wrapper d-flex align-items-stretch">
-        <nav id="sidebar">
-            <div class="p-4 pt-5">
-                <a href="#" class="img logo rounded-circle mb-5" style="background-image: url(images/logo.png);"></a>
-                <ul class="list-unstyled components mb-5">
+    <nav id="sidebar">
+				<div class="p-4 pt-5">
+		  		<a href="#" class="img logo rounded-circle mb-5" style="background-image: url(../../images/logo.png);"></a>
+	        <ul class="list-unstyled components mb-5">
 
-                <li>
-                    <a href="index.php?ui=<?php echo $ui; ?>">Home</a>
-                </li>
+	          <li>
+	              <a href="dashboard.php?ai=<?php echo $ai; ?>">Dashboard</a>
+	          </li>
 
-                <li>
-                <a href="shop.php?ui=<?php echo $ui; ?>">Shop</a>
-                </li>
-
-                <li>
-                <a href="cart.php?ui=<?php echo $ui; ?>">
-                    <span class="position-relative">Cart
-                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger ms-2">
-                        <?php
-
-                        $userID = base64_decode($ui);
-
-                        $select_allCart = $mysqli->query("SELECT * FROM cart WHERE userID = '$userID'");
-
-                        $totalCart = mysqli_num_rows($select_allCart);
-
-                        echo $totalCart;
-
-                        ?>  
-                        
-                    </span>
-                    </span> 
-                </a>
-                </li>
-                
-                <li class="active">
-                <a href="orders.php?ui=<?php echo $ui; ?>">Orders</a>
-                </li>
-                </ul>
+	          <li>
+              <a href="products.php?ai=<?php echo $ai; ?>">Products</a>
+	          </li>
+	          <li class="active">
+              <a href="orders.php?ai=<?php echo $ai; ?>">Orders</a>
+	          </li>
+	        </ul>
 
 
-                <?php
+          <a href="../auth/logout.php?ai=<?php echo $ai; ?>" class="text-white btn btn-danger w-100">Logout</a>
 
-                    if(isset($_SESSION['email']) && isset($_SESSION['password'])){
-                        $email = $_SESSION['email'];
-                        echo '<a href="views/auth/logout.php?ui='.$ui.'" class="text-white btn btn-danger w-100">Logout</a>';
-                    }else{
-                        $email = 'User';
-                        echo '<a href="views/auth/login.php?" class="text-white btn btn-success w-100">Login</a>';
-                    }
+	        <div class="footer mt-4">
+	        	<p>
+					    Copyright &copy;<script>document.write(new Date().getFullYear());</script> All rights reserved | JC Cakes and Pastries
+				    </p>
+	        </div>
 
+	      </div>
 
-                ?>
-
-                <div class="footer mt-4">
-                    <p>
-                            Copyright &copy;<script>document.write(new Date().getFullYear());</script> All rights reserved | JC Cakes and Pastries
-                        </p>
-                </div>
-
-            </div>
-        </nav>
+    	</nav>
 
             <!-- Page Content  -->
         <div id="content" class="p-4 p-md-5">
@@ -191,7 +159,7 @@ function generateKey($mysqli){
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
 
 
-                <p class="nav navbar-nav ml-auto fs-5 fw-bold">Hello <?php echo $email; ?></p>
+                <p class="nav navbar-nav ml-auto fs-5 fw-bold">Hello Admin!</p>
 
                 </div>
             </div>
@@ -206,13 +174,13 @@ function generateKey($mysqli){
 
                 ?>
                 <h2 class="mb-4">Order No: <span><?php echo $order_no; ?></span></h2>
-                <a href="orders.php?ui=<?php echo $ui; ?>" class="text-decoration-underline" style="font-size: 15pt;">Back to Orders</a>
+                <a href="orders.php?ai=<?php echo $ai; ?>" class="text-decoration-underline" style="font-size: 15pt;">Back to Orders</a>
             </div>
 
             <div class="alert alert-success text-center text-uppercase">Received</div>
 
             <?php
-                $usID = base64_decode($ui);
+                $usID = base64_decode($ai);
                 $select_user = $mysqli->query("SELECT * FROM user WHERE id = '$usID'");
 
                 if(mysqli_num_rows($select_user) != 0){
@@ -242,7 +210,7 @@ function generateKey($mysqli){
             
             <div class="content" id="contentID">
 
-                <form action="checkout.php?ui=<?php echo $ui; ?>" method="POST">
+                <form action="checkout.php?ai=<?php echo $ai; ?>" method="POST">
 
                     <div class="contact">
                         <label>Contact Details</label>
@@ -309,7 +277,7 @@ function generateKey($mysqli){
                                                 $totalPrice = $rowOrderProduct['qty'] * $rowProd['price'];
                                                 echo '<div class="product">
                                                         <div class="product-image">
-                                                            <img src="product_Images/'.$rowProd['img'].'" style="height: 80px; width: 80px; object-fit: cover;">
+                                                            <img src="../../product_Images/'.$rowProd['img'].'" style="height: 80px; width: 80px; object-fit: cover;">
                                                         </div>
                                 
                                                         <div class="product-details">
@@ -332,8 +300,6 @@ function generateKey($mysqli){
                                             }
                                             
                                         }
-                                    }else{
-                                        echo '<div class="alert alert-danger">No Item in Cart <a href="shop.php?ui='.$ui.'" class="text-decoration-underline">Continue Shopping</a></div>';
                                     }
 
                                 ?>
@@ -385,10 +351,10 @@ function generateKey($mysqli){
     
     </div>
 
-    <script src="js/jquery.min.js"></script>
-    <script src="js/popper.js"></script>
-    <script src="js/bootstrap.min.js"></script>
-    <script src="js/main.js"></script>
+    <script src="../js/jquery.min.js"></script>
+    <script src="../js/popper.js"></script>
+    <script src="../js/bootstrap.min.js"></script>
+    <script src="../js/main.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
 

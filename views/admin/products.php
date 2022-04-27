@@ -6,7 +6,7 @@ session_start();
 if(isset($_GET['ai'])){
   $ai = mysqli_escape_string($mysqli, $_GET['ai']);
 }
-
+ 
 if(isset($_POST['addProduct'])){
 
   $name = $_POST['name'];
@@ -133,7 +133,7 @@ if(isset($_POST['delProductBtn'])){
               <a href="products.php?ai=<?php echo $ai; ?>">Products</a>
 	          </li>
 	          <li>
-              <a href="orders.php?ai=<?php echo $ai; ?>">Orders</a>
+              <a href="orders.php?ai=<?php echo $ai; ?>&st=NA==">Orders</a>
 	          </li>
 	        </ul>
 

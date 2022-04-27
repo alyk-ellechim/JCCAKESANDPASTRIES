@@ -41,24 +41,16 @@ if(isset($_SESSION['email']) && isset($_SESSION['password'])){
 			  $check_cart = mysqli_query($mysqli, "SELECT * FROM cart WHERE userID = 0");
 
 			  if(mysqli_num_rows($check_cart) != 0){
-				$count = 0;
 				while($cart_row = mysqli_fetch_array($check_cart)){
 					$cart_id = $cart_row['id'];
 
 					$update_cart = mysqli_query($mysqli, "UPDATE cart set userID = '$ui' WHERE id = '$cart_id'");
-
-					if($update_cart){
-						$count = $count + 1;
-					}
 				}
-
-				if($count == mysqli_num_rows($check_cart)){
-					header("Location: ../../index.php?ui=$id");
-					$_SESSION['ui'] = $id;
-				}
-
 				
 			  }
+
+			  header("Location: ../../index.php?ui=$id");
+			  $_SESSION['ui'] = $id;
 
 			  
 			}
@@ -121,7 +113,7 @@ if(isset($_POST['signIn'])){
 				$_SESSION['email'] = $email;
 				$_SESSION['password'] = $password;
 				$_SESSION['ui'] = $id;
-	}
+			}
 		}
 	
 		}else{
@@ -209,10 +201,10 @@ if(isset($_POST['signIn'])){
 		</div>
 	</section>
 
-	<script src="js/jquery.min.js"></script>
-  <script src="js/popper.js"></script>
-  <script src="js/bootstrap.min.js"></script>
-  <script src="js/main.js"></script>
+	<script src="../../js/jquery.min.js"></script>
+  <script src="../../js/popper.js"></script>
+  <script src="../../js/bootstrap.min.js"></script>
+  <script src="../../js/main.js"></script>
 
 	</body>
 </html>

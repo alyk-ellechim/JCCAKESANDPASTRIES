@@ -4,9 +4,9 @@ include 'views/admin/functions/db_Connection.php';
 session_start();
 
 
-if(isset($_SESSION['email']) && isset($_SESSION['password'])){
-  header("Location: views/auth/login.php");
-}
+// if(isset($_SESSION['email']) && isset($_SESSION['password'])){
+//   header("Location: views/auth/login.php");
+// }
 
 if(isset($_GET['ui'])){
     $ui = mysqli_escape_string($mysqli, $_GET['ui']);

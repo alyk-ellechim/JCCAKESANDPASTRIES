@@ -51,7 +51,7 @@ if(isset($_POST['placeOrder'])){
         $_SESSION['placeOrder'] = "true";
         exit();
     }
-
+          
 
 
 }

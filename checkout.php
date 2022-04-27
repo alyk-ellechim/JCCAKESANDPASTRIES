@@ -47,9 +47,11 @@ if(isset($_POST['placeOrder'])){
 
     }else{
         //Paypal
-        header("Location: cart.php?ui=$ui");
-        $_SESSION['placeOrder'] = "true";
-        exit();
+        $insert_order = $mysqli->query("INSERT INTO orders (user_id, name, order_no, mode_of_payment, del_ins, address, phone, quantity, amount, discount, status, delivery_permission) VALUES ('$user_id', '$fname $lname', '$order_no', '$MOD', '$del_ins' ,'$address', '$phone', '$quantity', '$amount', '$discount', '0', '0')");
+        if($insert_order){
+            $order_no_enc = base64_encode($order_no);
+            header("Location: paypal.php?ui=$id&&on=$order_no_enc");
+        }
     }
 
 

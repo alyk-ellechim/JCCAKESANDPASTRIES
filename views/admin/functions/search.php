@@ -2,7 +2,7 @@
 
 include 'db_Connection.php'; 
 
-if(isset($_POST['Search'])){
+if(isset($_POST['Search'])){ 
 
     $search = $_POST['Search'];
 

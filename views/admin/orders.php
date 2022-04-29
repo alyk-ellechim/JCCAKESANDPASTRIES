@@ -238,6 +238,17 @@ if(isset($_GET['st'])){
     <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
 
 
+    <!-- tbl download -->
+    <script type="text/javascript" src="../src/jquery-3.3.1.slim.min.js"></script>
+
+    <script type="text/javascript" src="../src/jspdf.min.js"></script>
+
+    <script type="text/javascript" src="../src/jspdf.plugin.autotable.min.js"></script>
+
+    <script type="text/javascript" src="../src/tableHTMLExport.js"></script>
+
+
+
     <script>
 
       $(document).ready(function() {
@@ -484,6 +495,16 @@ if(isset($_GET['st'])){
         });   
 
       });
+
+
+      $("#download_order_btn").on("click",function(){
+        $("#orders_tbl_download").tableHTMLExport({
+        type:'pdf',
+        filename:'Orders.pdf',
+        ignoreColumns:'#last'
+        });
+    });
+
 
 
     </script>

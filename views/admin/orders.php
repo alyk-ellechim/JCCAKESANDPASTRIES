@@ -10,7 +10,7 @@ if(isset($_GET['ai'])){
   if(isset($_SESSION['ai'])){
     $ai = $_SESSION['ai'];
   }
-}
+}  
 
 
 if(isset($_GET['st'])){

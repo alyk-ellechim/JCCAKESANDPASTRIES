@@ -102,10 +102,15 @@ if(isset($_GET['st'])){
         
         <div class="content" id="contentID">
 
+        <div class="date mb-2">
+          <span style="font-size: 11pt;">From: <input type="date" class="p-1 rounded" id="fromDate" name="fromDate" style="border: 1px solid #ced4da;"></span>
+          <span style="font-size: 11pt;">To: <input type="date" class="p-1 rounded" id="toDate" name="toDate" style="border: 1px solid #ced4da;"></span>
+        </div>
+
         <div class="card">
             <h5 class="card-header  d-flex justify-content-between align-items-center">
                 <span>Order List</span>
-                <span><input type="search" class="p-1 rounded" id="search" name="search" placeholder="Search" style="font-size: 11pt;"></span>
+                <span><input type="search" class="p-1 rounded" id="search" name="search" placeholder="Search" style="font-size: 11pt; border: 1px solid #ced4da;"></span>
                 <span>
                   <?php
 
@@ -237,6 +242,160 @@ if(isset($_GET['st'])){
 
       $(document).ready(function() {
 
+        function calcTime(city, offset) {
+            // create Date object for current location
+            var d = new Date();
+
+            // convert to msec
+            // subtract local time zone offset
+            // get UTC time in msec
+            var utc = d.getTime() + (d.getTimezoneOffset() * 60000);
+
+            // create new Date object for different city
+            // using supplied offset
+            var nd = new Date(utc + (3600000*offset));
+
+            // return time as a string
+            var day = ("0" + nd.getDate()).slice(-2);
+            var month = ("0" + (nd.getMonth() + 1)).slice(-2);
+
+            var today = nd.getFullYear()+"-"+(month)+"-"+(day) ;
+            return today;
+        }
+
+        $('#fromDate').attr('max', calcTime('Philippines', '+8.0'));
+        $('#toDate').attr('max', calcTime('Philippines', '+8.0'));
+        $('#toDate').attr('min', calcTime('Philippines', '+8.0'));
+        $('#toDate').val(calcTime('Philippines', '+8.0'));
+        $('#fromDate').val(calcTime('Philippines', '+8.0'));
+
+        $(document).on('change', '#fromDate', function() {
+
+          var param = new URLSearchParams(window.location.search);
+          var ai = param.get('ai');
+          var st = param.get('st');
+
+          $('.orderTbody').html('');
+
+          var fromDate = $(this).val();
+
+          $('#toDate').attr('min', fromDate);
+
+          var toDate = $('#toDate').val();
+          $.ajax({
+              type: "POST",
+              url: "functions/filter_date.php",
+              data: {
+                  from : fromDate,
+                  to : toDate,
+              },
+              dataType: "json",
+              encode: true,
+              }).done(function (data) {
+
+                  var counter = 0;
+
+                  console.log(data);
+
+                  $.each(data, function(key, order){
+                    counter += 1;
+                    var status = '';
+
+                    if(order.status == 0){
+                      status = 'Pending';
+                    }else if(order.status == 1){
+                      status = 'Processing';
+                    }else if(order.status == 2){
+                      status = 'Out for delivery';
+                    }else if(order.status == 3){
+                      status = 'Received';
+                    } 
+
+                    var created_at = new Date(order.date_ordered);
+                    var month = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"][created_at.getMonth()];
+                    var date = (created_at.getMonth() + 1) + "/" + created_at.getDate() + "/" + created_at.getYear().toString().substr(-2) + " " + formatAMPM(created_at);
+
+                    $('.orderTbody').append('<tr>\
+                                              <th scope="row">'+counter+'</th>\
+                                              <td>'+order.order_no+'</td>\
+                                              <td>&#8369;'+Number(order.total_price).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")+'</td>\
+                                              <td>'+date+'</td>\
+                                              <td>'+status+'</td>\
+                                              <td><a href="order_products.php?ai='+ai+'&oid='+btoa(order.order_no)+'" class="btn btn-primary btn-sm">View</a></td>\
+                                          </tr>');
+
+
+                    
+
+                  });
+
+
+          });
+
+          
+
+
+        });   
+        
+        $(document).on('change', '#toDate', function() {
+
+            var param = new URLSearchParams(window.location.search);
+            var ai = param.get('ai');
+            var st = param.get('st');
+
+            $('.orderTbody').html('');
+
+            var toDate = $(this).val();
+            var fromDate = $('#fromDate').val();
+
+            $.ajax({
+                type: "POST",
+                url: "functions/filter_date.php",
+                data: {
+                    from : fromDate,
+                    to : toDate,
+                },
+                dataType: "json",
+                encode: true,
+                }).done(function (data) {
+
+                    var counter = 0;
+
+                    console.log(data);
+
+                    $.each(data, function(key, order){
+                      counter += 1;
+                      var status = '';
+
+                      if(order.status == 0){
+                        status = 'Pending';
+                      }else if(order.status == 1){
+                        status = 'Processing';
+                      }else if(order.status == 2){
+                        status = 'Out for delivery';
+                      }else if(order.status == 3){
+                        status = 'Received';
+                      } 
+
+                      var created_at = new Date(order.date_ordered);
+                      var month = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"][created_at.getMonth()];
+                      var date = (created_at.getMonth() + 1) + "/" + created_at.getDate() + "/" + created_at.getYear().toString().substr(-2) + " " + formatAMPM(created_at);
+
+                      $('.orderTbody').append('<tr>\
+                                                <th scope="row">'+counter+'</th>\
+                                                <td>'+order.order_no+'</td>\
+                                                <td>&#8369;'+Number(order.total_price).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")+'</td>\
+                                                <td>'+date+'</td>\
+                                                <td>'+status+'</td>\
+                                                <td><a href="order_products.php?ai='+ai+'&oid='+btoa(order.order_no)+'" class="btn btn-primary btn-sm">View</a></td>\
+                                            </tr>');
+
+
+                    });
+
+            });
+        });    
+
         $(document).on('change', '#selectStatus', function() {
 
           var param = new URLSearchParams(window.location.search);
@@ -299,7 +458,7 @@ if(isset($_GET['st'])){
                       status = 'Out for delivery';
                     }else if(order.status == 3){
                       status = 'Received';
-                    }
+                    } 
 
                     var created_at = new Date(order.date_ordered);
                     var month = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"][created_at.getMonth()];

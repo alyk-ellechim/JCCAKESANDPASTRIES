@@ -8,6 +8,12 @@ if(isset($_GET['ai'])){
 }else{
     $ai = "";
 }    
+
+if(isset($_GET['oid'])){
+    $oid = mysqli_escape_string($mysqli, $_GET['oid']);
+}else{
+    $oid = "";
+} 
  
 if(isset($_POST['saveStatus'])){
     $order_status = $_POST['status'];
@@ -291,7 +297,9 @@ if(isset($_POST['saveStatus'])){
                                             <div class="totals-value" id="cart-total"><?php echo number_format($total, 2); ?></div>
                                         </div>
 
+                                        
                                         <button type="button" name="update_status" class="btn btn-success m-0 checkout" data-bs-toggle="modal" data-bs-target="#updateStatus">Update Status</button>
+                                        <a href="receipt.php?ai=<?php echo $ai; ?>&oid=<?php echo $oid; ?>" name="update_status" class="btn btn-info mt-0 ms-0 mb-0 me-2 checkout">Download Receipt</a>
                                     </div>
                                     
                                 </div>

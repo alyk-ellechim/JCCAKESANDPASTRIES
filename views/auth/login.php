@@ -41,24 +41,16 @@ if(isset($_SESSION['email']) && isset($_SESSION['password'])){
 			  $check_cart = mysqli_query($mysqli, "SELECT * FROM cart WHERE userID = 0");
 
 			  if(mysqli_num_rows($check_cart) != 0){
-				$count = 0;
 				while($cart_row = mysqli_fetch_array($check_cart)){
 					$cart_id = $cart_row['id'];
 
 					$update_cart = mysqli_query($mysqli, "UPDATE cart set userID = '$ui' WHERE id = '$cart_id'");
-
-					if($update_cart){
-						$count = $count + 1;
-					}
 				}
-
-				if($count == mysqli_num_rows($check_cart)){
-					header("Location: ../../index.php?ui=$id");
-					$_SESSION['ui'] = $id;
-				}
-
 				
 			  }
+
+			  header("Location: ../../index.php?ui=$id");
+			  $_SESSION['ui'] = $id;
 
 			  
 			}
@@ -121,7 +113,7 @@ if(isset($_POST['signIn'])){
 				$_SESSION['email'] = $email;
 				$_SESSION['password'] = $password;
 				$_SESSION['ui'] = $id;
-	}
+			}
 		}
 	
 		}else{
@@ -195,13 +187,25 @@ if(isset($_POST['signIn'])){
 						<div class="form-group">
 							<button type="submit" name="signIn" class="form-control btn btn-primary rounded submit px-3">Login</button>
 						</div>
+
+						<?php
+
+							if(isset($_SESSION['verified'])){
+								echo '<p class="text-center p-0 m-0 text-success" style="font-size: 10pt;">Account has been verified</p>';
+								unset($_SESSION['verified']);
+							}
+
+
+						?>
+
+
 						<div class="form-group d-md-flex">
 							<div class="text-md-right">
 								<a href="#">Forgot Password</a>
 							</div>
 						</div>
 		          </form>
-		          <p class="text-center">Don't have an account? <a data-toggle="tab" href="register.php">Register</a></p>
+		          <p class="text-center">Don't have an account? <a href="register.php">Register</a></p>
 		        </div>
 		      </div>
 				</div>
@@ -209,10 +213,10 @@ if(isset($_POST['signIn'])){
 		</div>
 	</section>
 
-	<script src="js/jquery.min.js"></script>
-  <script src="js/popper.js"></script>
-  <script src="js/bootstrap.min.js"></script>
-  <script src="js/main.js"></script>
+	<script src="../../js/jquery.min.js"></script>
+  <script src="../../js/popper.js"></script>
+  <script src="../../js/bootstrap.min.js"></script>
+  <script src="../../js/main.js"></script>
 
 	</body>
 </html>

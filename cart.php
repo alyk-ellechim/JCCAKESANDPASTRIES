@@ -153,7 +153,7 @@ if(isset($_POST['removeFromCart'])){
                         $userID = base64_decode($ui);
 
                         $selectCart = $mysqli->query("SELECT * FROM cart WHERE userID = '$userID'");
-
+ 
                         $total = 0;
 
                         $checkoutBtn = "";

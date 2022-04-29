@@ -12,6 +12,22 @@ if(isset($_GET['ai'])){
   }
 }  
 
+
+if(isset($_GET['st'])){
+  $st = base64_decode($_GET['st']);
+  if($st == 4){
+    $status_query = '';
+  }elseif($st == 0){
+    $status_query = 'WHERE status = 0';
+  }elseif($st == 1){
+    $status_query = 'WHERE status = 1';
+  }elseif($st == 2){
+    $status_query = 'WHERE status = 2';
+  }elseif($st == 3){
+    $status_query = 'WHERE status = 3';
+  } 
+}
+
 ?>
 <!doctype html>
 <html lang="en">
@@ -45,7 +61,7 @@ if(isset($_GET['ai'])){
               <a href="products.php?ai=<?php echo $ai; ?>">Products</a>
 	          </li>
 	          <li class="active">
-              <a href="orders.php?ai=<?php echo $ai; ?>">Orders</a>
+              <a href="orders.php?ai=<?php echo $ai; ?>&st=NA==">Orders</a>
 	          </li>
 	        </ul>
 
@@ -88,7 +104,57 @@ if(isset($_GET['ai'])){
 
         <div class="card">
             <h5 class="card-header  d-flex justify-content-between align-items-center">
-                Order List
+                <span>Order List</span>
+                <span><input type="search" class="p-1 rounded" id="search" name="search" placeholder="Search" style="font-size: 11pt;"></span>
+                <span>
+                  <?php
+
+                    if($st == 4){
+                      echo '<select class="form-select" id="selectStatus" name="status" aria-label="Default select example">
+                          <option selected disabled>All Orders</option>
+                          <option value="0">Pending</option>
+                          <option value="1">Processing</option>
+                          <option value="2">Out for delivery</option>
+                          <option value="3">Received</option>
+                      </select>';
+                    }elseif($st == 0){
+                      echo '<select class="form-select" id="selectStatus" name="status" aria-label="Default select example">
+                          <option value="4">All Orders</option>
+                          <option selected disabled>Pending</option>
+                          <option value="1">Processing</option>
+                          <option value="2">Out for delivery</option>
+                          <option value="3">Received</option>
+                      </select>';
+                    }elseif($st == 1){
+                      echo '<select class="form-select" id="selectStatus" name="status" aria-label="Default select example">
+                          <option value="4">All Orders</option>
+                          <option value="0">Pending</option>
+                          <option selected disabled>Processing</option>
+                          <option value="2">Out for delivery</option>
+                          <option value="3">Received</option>
+                      </select>';
+                    }elseif($st == 2){
+                      echo '<select class="form-select" id="selectStatus" name="status" aria-label="Default select example">
+                          <option value="4">All Orders</option>
+                          <option value="0">Pending</option>
+                          <option value="1">Processing</option>
+                          <option selected disabled>Out for delivery</option>
+                          <option value="3">Received</option>
+                      </select>';
+                    }elseif($st == 3){
+                      echo '<select class="form-select" id="selectStatus" name="status" aria-label="Default select example">
+                          <option value="4">All Orders</option>
+                          <option value="0">Pending</option>
+                          <option value="1">Processing</option>
+                          <option value="2">Out for delivery</option>
+                          <option selected disabled>Received</option>
+                      </select>';
+                    } 
+                      
+
+                  ?>
+      
+                </span>
             </h5>
             <div class="card-body text-center overflow-auto" style="height: 410px;">
                 <!-- Orders --> 
@@ -99,14 +165,16 @@ if(isset($_GET['ai'])){
                         <th scope="col">Order No.</th>
                         <th scope="col">Price</th>
                         <th scope="col">Date Ordered</th>
+                        <th scope="col">Status</th>
                         <th scope="col">Action</th>
                         </tr>
                     </thead>
 
-                    <tbody>
+                    <tbody class="orderTbody">
 
                         <?php
-                            $select_orders = $mysqli->query("SELECT * FROM orders");
+
+                            $select_orders = $mysqli->query("SELECT * FROM orders ".$status_query."");
 
                             if(mysqli_num_rows($select_orders) != 0){
                                 $counter = 0;
@@ -118,12 +186,23 @@ if(isset($_GET['ai'])){
 
                                     $total_price = $row_orders['total_price'];
 
+                                    if($row_orders['status'] == 0){
+                                      $status = 'Pending';
+                                    }else if($row_orders['status'] == 1){
+                                      $status = 'Processing';
+                                    }else if($row_orders['status'] == 2){
+                                      $status = 'Out for delivery';
+                                    }else if($row_orders['status'] == 3){
+                                      $status = 'Received';
+                                    }
+
 
                                     echo '<tr>
                                             <th scope="row">'.$counter.'</th>
                                             <td>'.$row_orders['order_no'].'</td>
                                             <td>&#8369;'.number_format($total_price, 2).'</td>
                                             <td>'.$date_ordered.'</td>
+                                            <td>'.$status.'</td>
                                             <td><a href="order_products.php?ai='.$ai.'&oid='.base64_encode($row_orders['order_no']).'" class="btn btn-primary btn-sm">View</a></td>
                                         </tr>';
                                 }
@@ -150,7 +229,106 @@ if(isset($_GET['ai'])){
     <script src="../../js/popper.js"></script>
     <script src="../../js/bootstrap.min.js"></script>
     <script src="../../js/main.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+
+
+    <script>
+
+      $(document).ready(function() {
+
+        $(document).on('change', '#selectStatus', function() {
+
+          var param = new URLSearchParams(window.location.search);
+          var ai = param.get('ai');
+          var st = btoa($(this).val());
+          location.href = "orders.php?ai="+ai+"&st="+st+"";
+  
+        });     
+
+        function formatAMPM(date) {
+            var hours = date.getHours();
+            var minutes = date.getMinutes();
+            var ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12; // the hour '0' should be '12'
+            minutes = minutes < 10 ? '0'+minutes : minutes;
+            var strTime = hours + ':' + minutes + ' ' + ampm;
+            return strTime;
+        }
+
+
+        $(document).on('input', '#search', function() {
+
+          var param = new URLSearchParams(window.location.search);
+          var ai = param.get('ai');
+          var st = param.get('st');
+
+          $('.orderTbody').html('');
+
+          var search = $(this).val();
+          
+          if(!search.replace(/\s/g, '').length){
+            search = null;
+          }
+
+          $.ajax({
+              type: "POST",
+              url: "functions/search.php",
+              data: {
+                  Search : search,
+              },
+              dataType: "json",
+              encode: true,
+              }).done(function (data) {
+                  // $("#myCart").load(location.href + " #myCart > *");
+                  // $("#cartTotal").load(location.href + " #cartTotal > *");
+                  // console.log(data.results.length);
+
+                  var counter = 0;
+
+                  $.each(data, function(key, order){
+                    counter += 1;
+                    var status = '';
+
+                    if(order.status == 0){
+                      status = 'Pending';
+                    }else if(order.status == 1){
+                      status = 'Processing';
+                    }else if(order.status == 2){
+                      status = 'Out for delivery';
+                    }else if(order.status == 3){
+                      status = 'Received';
+                    }
+
+                    var created_at = new Date(order.date_ordered);
+                    var month = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"][created_at.getMonth()];
+                    var date = (created_at.getMonth() + 1) + "/" + created_at.getDate() + "/" + created_at.getYear().toString().substr(-2) + " " + formatAMPM(created_at);
+
+                    $('.orderTbody').append('<tr>\
+                                              <th scope="row">'+counter+'</th>\
+                                              <td>'+order.order_no+'</td>\
+                                              <td>&#8369;'+Number(order.total_price).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")+'</td>\
+                                              <td>'+date+'</td>\
+                                              <td>'+status+'</td>\
+                                              <td><a href="order_products.php?ai='+ai+'&oid='+btoa(order.order_no)+'" class="btn btn-primary btn-sm">View</a></td>\
+                                          </tr>');
+
+
+                    
+
+                  });
+
+
+          });
+
+        });   
+
+      });
+
+
+    </script>
+
 
   </body>
 </html>

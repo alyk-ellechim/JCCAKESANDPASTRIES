@@ -36,7 +36,7 @@ if(isset($_POST['placeOrder'])){
             $updateContact = $mysqli->query("UPDATE user SET name = '$name', address = '$address', phone = '$phone' WHERE id = '$userID'");
 
             if($deleteCart){
-                $insertOrders = $mysqli->query("INSERT INTO orders(order_no, userID, total_price, MOP, instruction) VALUES ('$order_no', '$userID', '$total', '$mop', '$instruction')");
+                $insertOrders = $mysqli->query("INSERT INTO orders(order_no, userID, total_price, MOP, instruction, delivery_permission) VALUES ('$order_no', '$userID', '$total', '$mop', '$instruction', 1)");
     
                 if($insertOrders){
                     $_SESSION['placeOrder'] = "true";
@@ -47,9 +47,18 @@ if(isset($_POST['placeOrder'])){
 
     }else{
         //Paypal
-        header("Location: cart.php?ui=$ui");
-        $_SESSION['placeOrder'] = "true";
-        exit();
+        $order_no = generateKey($mysqli);
+        $insertOrders = $mysqli->query("INSERT INTO orders(order_no, userID, total_price, MOP, instruction) VALUES ('$order_no', '$userID', '$total', '$mop', '$instruction')");
+
+        if($insertOrders){
+            $updateContact = $mysqli->query("UPDATE user SET name = '$name', address = '$address', phone = '$phone' WHERE id = '$userID'");
+            $order_no_enc = base64_encode($order_no);
+        
+            $_SESSION['placeOrder'] = "true";
+            header("Location: paypal.php?ui=$ui&&on=$order_no_enc");
+        }
+                
+
     }
 
 

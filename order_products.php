@@ -9,90 +9,34 @@ if(isset($_GET['ui'])){
     $ui = "";
 }
 
-if(isset($_POST['placeOrder'])){
-    $mop = $_POST['mop'];
-    $instruction = $_POST['instruction'];
-    $name = $_POST['name'];
-    $address = $_POST['address'];
-    $phone = $_POST['phone'];
-    $userID = base64_decode($ui);
-    $total = $_POST['total'];
-    
-    if($mop == "COD"){
-        $select_cart = $mysqli->query("SELECT * FROM cart WHERE userID = '$userID'");
 
-        if(mysqli_num_rows($select_cart) != 0){
-            $order_no = generateKey($mysqli);
-    
-            while($row_cart = mysqli_fetch_array($select_cart)){
-                $prodID = $row_cart['prodID'];
-                $qty = $row_cart['qty'];
-    
-                $insert = $mysqli->query("INSERT INTO order_products(order_no, prodID, qty) VALUES ('$order_no', '$prodID', '$qty')");
-            }
-    
-            $deleteCart = $mysqli->query("DELETE FROM cart WHERE userID = '$userID'");
+if(isset($_GET['oid'])){
+    $on = base64_decode($_GET['oid']);
+    $oid = mysqli_escape_string($mysqli, $_GET['oid']);
+}else{
+    $oid = "";
+}
 
-            $updateContact = $mysqli->query("UPDATE user SET name = '$name', address = '$address', phone = '$phone' WHERE id = '$userID'");
+if(isset($_POST['received'])){
+    $order_status = 3;
 
-            if($deleteCart){
-                $insertOrders = $mysqli->query("INSERT INTO orders(order_no, userID, total_price, MOP, instruction) VALUES ('$order_no', '$userID', '$total', '$mop', '$instruction')");
-    
-                if($insertOrders){
-                    $_SESSION['placeOrder'] = "true";
-                    header("Location: cart.php?ui=$ui");
-                }
-            }
-        }
+    $update_status = $mysqli->query("UPDATE orders SET status = '$order_status' WHERE order_no = '$on'");
 
-    }else{
-        //Paypal
-        header("Location: cart.php?ui=$ui");
-        $_SESSION['placeOrder'] = "true";
+    if($update_status){
+        $_SESSION['received'] = "true";
+        header("Location: order_products.php?ui=".$ui."&oid=".$oid."");
         exit();
     }
+}elseif(isset($_POST['cancel'])){
 
+    $delete_order = $mysqli->query("DELETE FROM orders WHERE order_no = '$on'");
 
-
-}
-
-
-//Generate Order No
-function checkKeys($mysqli, $randStr){
-
-    $result = $mysqli->query("SELECT * FROM orders");
-    if(mysqli_num_rows($result) != 0){
-        while($row = mysqli_fetch_array($result)){
-            if($row['order_no'] == $randStr){
-                $keyExist = true;
-                break;
-            }else{
-                $keyExist = false;
-            }
-        }
-    }else{
-        $keyExist = false;    
+    if($delete_order){
+        $_SESSION['cancel'] = "true";
+        header("Location: orders.php?ui=".$ui."");
+        exit();
     }
-    return $keyExist;
 }
-
-function generateKey($mysqli){
-    $keylength = 11;
-    $str = "1234567890";
-    $randStr = substr(str_shuffle($str), 0, $keylength);
-
-
-    $checkKey = checkKeys($mysqli, $randStr);
-
-    while($checkKey == true){
-        $randStr = substr(str_shuffle($str), 0, $keylength);
-        $checkKey = checkKeys($mysqli, $randStr);
-    }
-
-    return $randStr;
-}
-//End Order No
-
 
 ?>
 <!doctype html>
@@ -209,9 +153,29 @@ function generateKey($mysqli){
                 <a href="orders.php?ui=<?php echo $ui; ?>" class="text-decoration-underline" style="font-size: 15pt;">Back to Orders</a>
             </div>
 
-            <div class="alert alert-success text-center text-uppercase">Received</div>
-
             <?php
+
+                $selectCartUser = $mysqli->query("SELECT * FROM orders WHERE order_no = '$order_no'");
+                $rowUserID = mysqli_fetch_array($selectCartUser);
+
+                if($rowUserID['status'] == 0){
+                    $status = 'Pending';
+                }else if($rowUserID['status'] == 1){
+                    $status = 'Processing';
+                }else if($rowUserID['status'] == 2){
+                    $status = 'Out for delivery';
+                }else if($rowUserID['status'] == 3){
+                    $status = 'Received';
+                }
+
+                if($rowUserID['MOP'] == 'COD'){
+                    $mop = 'Cash on delivery';
+                }else{
+                    $mop = 'Paypal';
+                }
+
+                $instruction = $rowUserID['instruction'];
+
                 $usID = base64_decode($ui);
                 $select_user = $mysqli->query("SELECT * FROM user WHERE id = '$usID'");
 
@@ -233,17 +197,16 @@ function generateKey($mysqli){
                     }else{
                         $phone = "";
                     }
+                    
                 }
 
                 
 
             ?>
-            
+
+            <div class="alert alert-success text-center text-uppercase"><?php echo $status; ?></div>
             
             <div class="content" id="contentID">
-
-                <form action="checkout.php?ui=<?php echo $ui; ?>" method="POST">
-
                     <div class="contact">
                         <label>Contact Details</label>
 
@@ -346,12 +309,12 @@ function generateKey($mysqli){
                             <div class="wrapper d-flex justify-content-between">
                                 <div class="mop">
                                     <label>Mode of payment:</label>
-                                    <p>Cash on Delivery</p>
+                                    <p><?php echo $mop; ?></p>
                                 </div>
 
                                 <div class="instruction d-flex flex-column">
                                     <label for="ins">Delivery Instruction</label>
-                                    <p>TEsting</p>
+                                    <p><?php echo $instruction; ?></p>
                                 </div>
 
                                 <div class="totalSection">
@@ -370,14 +333,28 @@ function generateKey($mysqli){
                                             <label style="margin-right: 80px;">Grand Total</label>
                                             <div class="totals-value" id="cart-total"><?php echo number_format($total, 2); ?></div>
                                         </div>
+
+                                        <?php if($status == 'Out for delivery'){ ?>
+
+                                            <form action="order_products.php?ui=<?php echo $ui; ?>&oid=<?php echo $oid; ?>" method="POST">
+                                                <button type="submit" name="received" class="btn btn-success m-0 checkout">Received</button>
+                                            </form>
+
+                                        <?php } ?>
+
+                                        <?php if($status == 'Pending'){ ?>
+
+                                            <form action="order_products.php?ui=<?php echo $ui; ?>&oid=<?php echo $oid; ?>" method="POST">
+                                                <button type="submit" name="cancel" class="btn btn-danger m-0 checkout">Cancel</button>
+                                            </form>
+
+                                        <?php } ?>
                                     </div>
                                     
                                 </div>
                             </div>
                         </div>
                     </div>
-
-                </form>
 
             </div>
 
@@ -390,6 +367,17 @@ function generateKey($mysqli){
     <script src="js/bootstrap.min.js"></script>
     <script src="js/main.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+
+    <?php			
+      if(isset($_SESSION['received'])) {
+        echo '<script type="text/javascript">
+          swal("Success!", "Order Received", "success");
+        </script>';
+        unset($_SESSION['received']);
+      }
+
+    ?>
 
 
   </body>

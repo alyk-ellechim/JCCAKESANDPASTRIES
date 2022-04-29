@@ -7,6 +7,39 @@ if(isset($_GET['ai'])){
 }
 
 
+$select_orders = $mysqli->query("SELECT * FROM orders");
+
+$pending = 0;
+$processing = 0;
+$delivery = 0;
+$dailySales = 0;
+
+if(mysqli_num_rows($select_orders) != 0){
+    $today = date("m/d/y");
+    while($rowOrders = mysqli_fetch_array($select_orders)){
+        if($rowOrders['status'] == 0){
+            $pending += 1;
+        }elseif($rowOrders['status'] == 1){
+            $processing += 1;
+        }elseif($rowOrders['status'] == 2){
+            $delivery += 1;
+        }
+
+
+        $time = strtotime($rowOrders['date_ordered']);
+        $date_ordered = date("m/d/y", $time);
+
+        if($today == $date_ordered){
+            $dailySales += $rowOrders['total_price'];
+        }
+
+    }
+}
+
+
+
+
+
 ?>
 <!doctype html>
 <html lang="en">
@@ -71,7 +104,7 @@ if(isset($_GET['ai'])){
               <a href="products.php?ai=<?php echo $ai; ?>">Products</a>
 	          </li>
 	          <li>
-              <a href="orders.php?ai=<?php echo $ai; ?>">Orders</a>
+              <a href="orders.php?ai=<?php echo $ai; ?>&st=NA==">Orders</a>
 	          </li>
 	        </ul>
 
@@ -130,21 +163,20 @@ if(isset($_GET['ai'])){
 
             <div class="row">
                 <div class="col-sm-6">
-                    <div class="card">
+                    <div class="card" style="height: 205px;">
                         <div class="card-body">
                             <h5 class="card-title">Daily Sales</h5>
-                            <p class="card-text fs-1">&#8369; 50.00</p>
-                            <a href="#" class="btn btn-primary">View</a>
+                            <p class="card-text fs-1">&#8369; <?php echo number_format($dailySales, 2); ?></p>
                         </div>
                     </div>
                 </div>
 
                 <div class="col-sm-6 mt-sm-0 mt-4">
-                    <div class="card">
+                    <div class="card" style="height: 205px;">
                         <div class="card-body">
                             <h5 class="card-title">Pending Order</h5>
-                            <p class="card-text fs-1">10</p>
-                            <a href="#" class="btn btn-primary">View</a>
+                            <p class="card-text fs-1"><?php echo $pending; ?></p>
+                            <a href="orders.php?ai=<?php echo $ai; ?>&st=MA==" class="btn btn-primary">View</a>
                         </div>
                     </div>
                 </div>
@@ -152,21 +184,21 @@ if(isset($_GET['ai'])){
 
             <div class="row mt-4">
                 <div class="col-sm-6">
-                    <div class="card">
+                    <div class="card" style="height: 205px;">
                         <div class="card-body">
                             <h5 class="card-title">Processing</h5>
-                            <p class="card-text fs-1">5</p>
-                            <a href="#" class="btn btn-primary">View</a>
+                            <p class="card-text fs-1"><?php echo $processing; ?></p>
+                            <a href="orders.php?ai=<?php echo $ai; ?>&st=MQ==" class="btn btn-primary">View</a>
                         </div>
                     </div>
                 </div>
 
                 <div class="col-sm-6 mt-sm-0 mt-4">
-                    <div class="card">
+                    <div class="card" style="height: 205px;">
                         <div class="card-body">
                             <h5 class="card-title">Out for Delivery</h5>
-                            <p class="card-text fs-1">5</p>
-                            <a href="#" class="btn btn-primary">View</a>
+                            <p class="card-text fs-1"><?php echo $delivery; ?></p>
+                            <a href="orders.php?ai=<?php echo $ai; ?>&st=Mg==" class="btn btn-primary">View</a>
                         </div>
                     </div>
                 </div>

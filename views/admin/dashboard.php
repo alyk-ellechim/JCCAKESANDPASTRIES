@@ -12,10 +12,10 @@ $select_orders = $mysqli->query("SELECT * FROM orders");
 $pending = 0;
 $processing = 0;
 $delivery = 0;
+$dailySales = 0;
 
 if(mysqli_num_rows($select_orders) != 0){
     $today = date("m/d/y");
-    $dailySales = 0;
     while($rowOrders = mysqli_fetch_array($select_orders)){
         if($rowOrders['status'] == 0){
             $pending += 1;

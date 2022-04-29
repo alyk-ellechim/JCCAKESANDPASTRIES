@@ -7,7 +7,7 @@ if(isset($_GET['ai'])){
     $ai = mysqli_escape_string($mysqli, $_GET['ai']);
 }else{
     $ai = "";
-}  
+}    
  
 if(isset($_POST['saveStatus'])){
     $order_status = $_POST['status'];

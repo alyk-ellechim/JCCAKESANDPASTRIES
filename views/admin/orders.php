@@ -105,6 +105,7 @@ if(isset($_GET['st'])){
         <div class="card">
             <h5 class="card-header  d-flex justify-content-between align-items-center">
                 <span>Order List</span>
+                <span><input type="search" class="p-1 rounded" id="search" name="search" placeholder="Search" style="font-size: 11pt;"></span>
                 <span>
                   <?php
 
@@ -169,7 +170,7 @@ if(isset($_GET['st'])){
                         </tr>
                     </thead>
 
-                    <tbody>
+                    <tbody class="orderTbody">
 
                         <?php
 
@@ -234,17 +235,100 @@ if(isset($_GET['st'])){
 
     <script>
 
-      $(document).on('change', '#selectStatus', function() {
+      $(document).ready(function() {
 
-        var param = new URLSearchParams(window.location.search);
-        var ai = param.get('ai');
-        var st = btoa($(this).val());
-        location.href = "orders.php?ai="+ai+"&st="+st+"";
- 
-      });     
+        $(document).on('change', '#selectStatus', function() {
+
+          var param = new URLSearchParams(window.location.search);
+          var ai = param.get('ai');
+          var st = btoa($(this).val());
+          location.href = "orders.php?ai="+ai+"&st="+st+"";
+  
+        });     
+
+        function formatAMPM(date) {
+            var hours = date.getHours();
+            var minutes = date.getMinutes();
+            var ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12; // the hour '0' should be '12'
+            minutes = minutes < 10 ? '0'+minutes : minutes;
+            var strTime = hours + ':' + minutes + ' ' + ampm;
+            return strTime;
+        }
+
+
+        $(document).on('input', '#search', function() {
+
+          var param = new URLSearchParams(window.location.search);
+          var ai = param.get('ai');
+          var st = param.get('st');
+
+          $('.orderTbody').html('');
+
+          var search = $(this).val();
+          
+          if(!search.replace(/\s/g, '').length){
+            search = null;
+          }
+
+          $.ajax({
+              type: "POST",
+              url: "functions/search.php",
+              data: {
+                  Search : search,
+              },
+              dataType: "json",
+              encode: true,
+              }).done(function (data) {
+                  // $("#myCart").load(location.href + " #myCart > *");
+                  // $("#cartTotal").load(location.href + " #cartTotal > *");
+                  // console.log(data.results.length);
+
+                  var counter = 0;
+
+                  $.each(data, function(key, order){
+                    counter += 1;
+                    var status = '';
+
+                    if(order.status == 0){
+                      status = 'Pending';
+                    }else if(order.status == 1){
+                      status = 'Processing';
+                    }else if(order.status == 2){
+                      status = 'Out for delivery';
+                    }else if(order.status == 3){
+                      status = 'Received';
+                    }
+
+                    var created_at = new Date(order.date_ordered);
+                    var month = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"][created_at.getMonth()];
+                    var date = (created_at.getMonth() + 1) + "/" + created_at.getDate() + "/" + created_at.getYear().toString().substr(-2) + " " + formatAMPM(created_at);
+
+                    $('.orderTbody').append('<tr>\
+                                              <th scope="row">'+counter+'</th>\
+                                              <td>'+order.order_no+'</td>\
+                                              <td>&#8369;'+Number(order.total_price).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")+'</td>\
+                                              <td>'+date+'</td>\
+                                              <td>'+status+'</td>\
+                                              <td><a href="order_products.php?ai='+ai+'&oid='+btoa(order.order_no)+'" class="btn btn-primary btn-sm">View</a></td>\
+                                          </tr>');
+
+
+                    
+
+                  });
+
+
+          });
+
+        });   
+
+      });
 
 
     </script>
+
 
   </body>
 </html>

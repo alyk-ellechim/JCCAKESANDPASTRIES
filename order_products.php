@@ -3,11 +3,26 @@
 include 'views/admin/functions/db_Connection.php'; 
 session_start();
 
+if(isset($_SESSION['ai'])){
+    header("Location: views/auth/login.php");
+  }
+
 if(isset($_GET['ui'])){
     $ui = mysqli_escape_string($mysqli, $_GET['ui']);
 }else{
     $ui = "";
 }
+
+
+$selectAdmin = $mysqli->query("SELECT * FROM admin");
+$rowAdmin = mysqli_fetch_array($selectAdmin);
+
+if($rowAdmin['delivery_fee'] != null){
+    $delivery_fee = '&#8369;' . $rowAdmin['delivery_fee'];
+}else{
+    $delivery_fee = "FREE";
+}
+
 
 
 if(isset($_GET['oid'])){
@@ -299,6 +314,12 @@ if(isset($_POST['received'])){
                                         echo '<div class="alert alert-danger">No Item in Cart <a href="shop.php?ui='.$ui.'" class="text-decoration-underline">Continue Shopping</a></div>';
                                     }
 
+                                    if($rowAdmin['delivery_fee'] != null){
+                                        $finalPrice = $total + $rowAdmin['delivery_fee'];
+                                    }else{
+                                        $finalPrice = $total;
+                                    }
+
                                 ?>
 
                             </div>
@@ -326,12 +347,12 @@ if(isset($_POST['received'])){
 
                                         <div class="totals-item m-0 p-0">
                                             <label>Delivery Fee</label>
-                                            <div class="text-end">FREE</div>
+                                            <div class="text-end"><?php echo $delivery_fee;?></div>
                                         </div>
 
                                         <div class="totals-item totals-item-total m-0 p-0">
                                             <label style="margin-right: 80px;">Grand Total</label>
-                                            <div class="totals-value" id="cart-total"><?php echo number_format($total, 2); ?></div>
+                                            <div class="totals-value" id="cart-total"><?php echo number_format($finalPrice, 2); ?></div>
                                         </div>
 
                                         <?php if($status == 'Out for delivery'){ ?>

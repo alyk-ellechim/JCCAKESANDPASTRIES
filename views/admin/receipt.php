@@ -1,7 +1,11 @@
 <?php
 
 
-include 'functions/db_Connection.php'; 
+include 'functions/db_Connection.php';
+
+if(isset($_SESSION['ui'])){
+    header("Location: ../auth/login.php");
+}
 
     if(isset($_GET['oid'])){
         $order_no = base64_decode($_GET['oid']);
@@ -68,8 +72,6 @@ include 'functions/db_Connection.php';
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
     
-    <script src="../js/invoice_print.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.js"></script>
 
 
 
@@ -194,7 +196,12 @@ include 'functions/db_Connection.php';
     </style>
 </head>
 <body>
-    <div class="page-content container my-5">
+
+    <button class="btn bg-white btn-light mx-1px text-95 position-absolute" id="exportToPdf" data-title="PDF" style="top: 0; right: 0; margin: 55px 150px;">
+        <i class="mr-1 fa fa-file-pdf-o text-danger-m1 text-120 w-2"></i>
+        Export
+    </button>
+    <div class="page-content container my-5" id="content">
         <div class="page-header text-blue-d2">
             <h1 class="page-title text-secondary-d1">
                 Order
@@ -210,10 +217,6 @@ include 'functions/db_Connection.php';
                         <i class="mr-1 fa fa-print text-primary-m1 text-120 w-2"></i>
                         Print
                     </a> -->
-                    <a class="btn bg-white btn-light mx-1px text-95" href="#" data-title="PDF">
-                        <i class="mr-1 fa fa-file-pdf-o text-danger-m1 text-120 w-2"></i>
-                        Export
-                    </a>
                 </div>
             </div>
         </div>
@@ -350,7 +353,7 @@ include 'functions/db_Connection.php';
                                         Total Amount
                                     </div>
                                     <div class="col-5">
-                                        <span class="text-150 text-success-d3 opacity-2">&#8369; <?php echo number_format($total, 2); ?></span>
+                                        <span class="text-success-d3 opacity-2" style="font-size: 15pt;">&#8369; <?php echo number_format($total, 2); ?></span>
                                     </div>
                                 </div>
                             </div>
@@ -368,3 +371,6 @@ include 'functions/db_Connection.php';
     </div>
 </body>
 </html>
+
+<script src="../../js/invoice.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.js"></script>

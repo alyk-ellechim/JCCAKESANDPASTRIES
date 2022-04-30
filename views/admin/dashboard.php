@@ -1,6 +1,11 @@
 <?php
 
 include '../admin/functions/db_Connection.php'; 
+session_start();
+
+if(isset($_SESSION['ui'])){
+    header("Location: ../auth/login.php");
+}
 
 if(isset($_GET['ai'])){
     $ai = mysqli_escape_string($mysqli, $_GET['ai']);
@@ -15,6 +20,7 @@ $delivery = 0;
 $dailySales = 0;
 
 if(mysqli_num_rows($select_orders) != 0){
+    date_default_timezone_set('Asia/Manila');
     $today = date("m/d/y");
     while($rowOrders = mysqli_fetch_array($select_orders)){
         if($rowOrders['status'] == 0){
@@ -30,7 +36,10 @@ if(mysqli_num_rows($select_orders) != 0){
         $date_ordered = date("m/d/y", $time);
 
         if($today == $date_ordered){
-            $dailySales += $rowOrders['total_price'];
+            if($rowOrders['status'] == 3){
+                $dailySales += $rowOrders['total_price'];
+            }
+            
         }
 
     }

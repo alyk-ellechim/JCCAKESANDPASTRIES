@@ -1,12 +1,12 @@
 window.onload = function () {
-    document.getElementById("download-invoice")
+    document.getElementById("exportToPdf")
         .addEventListener("click", () => {
-            const invoice = this.document.getElementById("invoice");
+            const invoice = this.document.getElementById("content");
             console.log(invoice);
             console.log(window);
             var opt = {
                 margin: 1,
-                filename: 'invoice.pdf',
+                filename: 'Receipt.pdf',
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { scale: 2 },
                 jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }

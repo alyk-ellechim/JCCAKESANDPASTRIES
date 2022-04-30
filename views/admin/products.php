@@ -3,6 +3,10 @@
 include '../admin/functions/db_Connection.php'; 
 session_start();
 
+if(isset($_SESSION['ui'])){
+  header("Location: ../auth/login.php");
+}
+
 if(isset($_GET['ai'])){
   $ai = mysqli_escape_string($mysqli, $_GET['ai']);
 }
@@ -27,7 +31,7 @@ if(isset($_POST['addProduct'])){
     if($insertProduct){
 
       $_SESSION['success'] = '<div class="alert alert-success">New Product Added</div>';
-      header("Location: products.php");
+      header("Location: products.php?ai=".$ai."");
       exit();
 
     }else{
@@ -76,7 +80,7 @@ if(isset($_POST['addProduct'])){
   if($updateProduct){
 
     $_SESSION['success'] = '<div class="alert alert-success">Product Saved</div>';
-    header("Location: products.php");
+    header("Location: products.php?ai=".$ai."");
     exit();
 
   }else{
@@ -88,8 +92,9 @@ if(isset($_POST['addProduct'])){
   $deleteProduct = $mysqli->query("DELETE FROM products WHERE id = '$id'");
 
   if($deleteProduct){
+
     $_SESSION['success'] = '<div class="alert alert-success">Product Deleted</div>';
-    header("Location: products.php");
+    header("Location: products.php?ai=".$ai."");
     exit();
   }
 }
@@ -98,6 +103,54 @@ if(isset($_POST['delProductBtn'])){
 
   $id = $_POST['delProductBtn'];
   $deleteModal = "true";
+}
+
+
+if(isset($_POST['addCategory'])){
+  $category = strtolower($_POST['name']);
+
+  $insertCategory = $mysqli->query("INSERT INTO categories(name) VALUES('$category')");
+
+  if($insertCategory){
+    $_SESSION['successCategory'] = '<div class="alert alert-success">Category Saved</div>';
+    header("Location: products.php?ai=".$ai."");
+    exit();
+  }
+
+
+}elseif(isset($_POST['editCat'])){
+  $cat_id = $_POST['editCat'];
+
+  $selectCatEdit = $mysqli->query("SELECT * FROM categories WHERE id = '$cat_id'")
+  or die("Failed to query database" .mysql_error());
+  $rowCatEdit = mysqli_fetch_array($selectCatEdit);
+
+  $editCatModal = "true";
+}elseif(isset($_POST['updateCategory'])){
+
+  $catID = $_POST['catID'];
+  $name = $_POST['name'];
+
+  $updateCat = $mysqli->query("UPDATE categories SET name = '$name' WHERE id = '$catID'");
+
+  if($updateCat){
+    $_SESSION['successCategory'] = '<div class="alert alert-success">Category Updated</div>';
+    header("Location: products.php?ai=".$ai."");
+    exit();
+  }
+}elseif(isset($_POST['deleteCat'])){
+  $cat_id = $_POST['deleteCat'];
+  $deleteCatModal = "true";
+}elseif(isset($_POST['delCategory'])){
+  $id = $_POST['catID'];
+  $deleteCategory = $mysqli->query("DELETE FROM categories WHERE id = '$id'");
+
+  if($deleteCategory){
+
+    $_SESSION['successCategory'] = '<div class="alert alert-success">Category Deleted</div>';
+    header("Location: products.php?ai=".$ai."");
+    exit();
+  }
 }
 
 ?>
@@ -181,7 +234,7 @@ if(isset($_POST['delProductBtn'])){
           }
         ?>
 
-        <div class="card">
+        <div class="card mb-5">
             <h5 class="card-header  d-flex justify-content-between align-items-center">
                 All Products
                 <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#AddProductModal">Add Product</button>
@@ -207,8 +260,8 @@ if(isset($_POST['delProductBtn'])){
                             <h5 class="card-title">'.$row['name'].'</h5>
                             <p class="card-text">'.$row['description'].'</p>
                             <p class="card-text fs-6">&#8369; '.$row['price'].'.00</p>
-                            <form action="products.php" method="POST">
-                            <button type="submit" name="editProduct" value="'.$row['id'].'" class="btn text-white" style="background-color: blue;">Edit</button>
+                            <form action="products.php?ai='.$ai.'" method="POST">
+                            <button type="submit" name="editProduct" value="'.$row['id'].'" class="btn btn-info text-white" style="background-color: blue;">Edit</button>
                             <button type="submit" name="delProductBtn" value="'.$row['id'].'" class="btn btn-danger">Delete</button>
                             </form>
                         </div>
@@ -228,6 +281,66 @@ if(isset($_POST['delProductBtn'])){
             </div>
         </div>
 
+        <?php
+          if(isset($_SESSION['successCategory'])){
+            echo $_SESSION['successCategory'];
+            unset($_SESSION['successCategory']);
+          }
+        ?>
+
+        <div class="card">
+            <h5 class="card-header  d-flex justify-content-between align-items-center">
+                Category
+                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#AddCategoryModal">Add Category</button>
+            </h5>
+            <div class="card-body text-center overflow-auto" style="height: 410px;">
+                <!-- Category --> 
+                <table class="table table-striped" id="orders">
+                    <thead>
+                        <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Category</th>
+                        <th scope="col" id="last">Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody class="orderTbody text-capitalize">
+
+                        <?php
+                            $selectCategory = $mysqli->query("SELECT * FROM categories")
+                            or die("Failed to query database" .mysql_error());
+
+                            $count = 0;
+
+                            while ($rowCat = mysqli_fetch_array($selectCategory)){
+                              $count += 1;
+                              echo '<tr>
+                                  <td scope="row">'.$count.'</td>
+                                  <td>'.$rowCat['name'].'</td>
+                                  <td id="last">
+                                    <form action="products.php?ai='.$ai.'" method="POST">
+                                      <button type="submit" name="editCat" value="'.$rowCat['id'].'" class="btn btn-info btn-sm" style="background-color: blue;">Edit</button>
+                                      <button type="submit" name="deleteCat" value="'.$rowCat['id'].'" class="btn btn-danger btn-sm">Delete</button>
+                                    </form>
+                                  </td>
+                              </tr>';
+                            }
+
+                            
+
+                        ?>
+
+                            
+                        
+
+                    </tbody>
+                </table>
+           
+          
+
+            </div>
+        </div>
+
 
         <!-- Add Product Modal -->
         <div class="modal fade" id="AddProductModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -238,7 +351,7 @@ if(isset($_POST['delProductBtn'])){
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
               </div>
 
-              <form class="needs-validation" method="POST" action="products.php" enctype="multipart/form-data">
+              <form class="needs-validation" method="POST" action="products.php?ai=<?php echo $ai; ?>" enctype="multipart/form-data">
 
                 <div class="modal-body">
 
@@ -261,8 +374,17 @@ if(isset($_POST['delProductBtn'])){
                       <label for="selectCat" class="form-label">Category</label>
                       <select id="selectCat" name="category" class="form-select" required autofocus>
                       <option value="" disabled selected>Select Category</option>
-                        <option value="cake">Cake</option>
-                        <option value="pastry">Pastry</option>
+                      <?php
+                            $selectCategory = $mysqli->query("SELECT * FROM categories")
+                            or die("Failed to query database" .mysql_error());
+
+                            while ($rowCat = mysqli_fetch_array($selectCategory)){
+                              echo '<option value="'.$rowCat['name'].'">'.$rowCat['name'].'</option>';
+                            }
+
+                            
+
+                        ?>
                       </select>
                     </div>
 
@@ -292,7 +414,7 @@ if(isset($_POST['delProductBtn'])){
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
               </div>
 
-              <form class="needs-validation" method="POST" action="products.php" enctype="multipart/form-data">
+              <form class="needs-validation" method="POST" action="products.php?ai=<?php echo $ai; ?>" enctype="multipart/form-data">
 
                 <div class="modal-body">
 
@@ -315,8 +437,20 @@ if(isset($_POST['delProductBtn'])){
                       <label for="selectCat" class="form-label">Category</label>
                       <select id="selectCat" name="category" class="form-select text-capitalize">
                         <option value="<?php echo $rowEdit['category']; ?>"><?php echo $rowEdit['category']; ?></option>
-                        <option value="cake">Cake</option>
-                        <option value="pastry">Pastry</option>
+                        <?php
+                            $selectCategory = $mysqli->query("SELECT * FROM categories")
+                            or die("Failed to query database" .mysql_error());
+
+                            while ($rowCat = mysqli_fetch_array($selectCategory)){
+                              if($rowEdit['category'] != $rowCat['name']){
+                                echo '<option value="'.$rowCat['name'].'">'.$rowCat['name'].'</option>';
+                              }
+                              
+                            }
+
+                            
+
+                        ?>
                       </select>
                     </div>
 
@@ -344,11 +478,11 @@ if(isset($_POST['delProductBtn'])){
           <div class="modal-dialog">
             <div class="modal-content">
               <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">Edit Product</h5>
+                <h5 class="modal-title" id="exampleModalLabel">Delete Product</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
               </div>
 
-              <form class="needs-validation" method="POST" action="products.php" enctype="multipart/form-data">
+              <form class="needs-validation" method="POST" action="products.php?ai=<?php echo $ai; ?>" enctype="multipart/form-data">
 
                 <div class="modal-body">
 
@@ -361,6 +495,98 @@ if(isset($_POST['delProductBtn'])){
                 <div class="modal-footer">
                   <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                   <button type="submit" name="delProduct" class="btn btn-danger">Delete</button>
+                </div>
+
+              </form>
+            </div>
+          </div>
+        </div>
+
+
+        <!-- Add Category Modal -->
+        <div class="modal fade" id="AddCategoryModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Add New Category</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+
+              <form class="needs-validation" method="POST" action="products.php?ai=<?php echo $ai; ?>" enctype="multipart/form-data">
+
+                <div class="modal-body">
+
+                    <div class="mb-3">
+                      <label for="name" class="form-label">Category</label>
+                      <input type="text" name="name" required autofocus class="form-control" id="name" placeholder="Category Name">
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                  <button type="submit" name="addCategory" class="btn btn-success">Save changes</button>
+                </div>
+
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- Edit Category Modal -->
+        <div class="modal fade" id="EditCategoryModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Edit Category</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+
+              <form class="needs-validation" method="POST" action="products.php?ai=<?php echo $ai; ?>" enctype="multipart/form-data">
+
+                <div class="modal-body">
+
+                    <div class="mb-3">
+                      <label for="name" class="form-label">Category</label>
+                      <input type="text" name="name" value="<?php echo $rowCatEdit['name']; ?>" required autofocus class="form-control" id="name" placeholder="Category Name">
+                    </div>
+
+                </div>
+
+                <input type="hidden" name="catID" value="<?php echo $rowCatEdit['id']; ?>">
+                
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                  <button type="submit" name="updateCategory" class="btn btn-success">Save changes</button>
+                </div>
+
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- Delete Category Modal -->
+        <div class="modal fade" id="DeleteCategoryModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Delete Category</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+
+              <form class="needs-validation" method="POST" action="products.php?ai=<?php echo $ai; ?>" enctype="multipart/form-data">
+
+                <div class="modal-body">
+
+                      <h5 class="text-center">Are you sure?</h5>
+
+                </div>
+
+                <input type="hidden" name="catID" value="<?php echo $cat_id; ?>">
+
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                  <button type="submit" name="delCategory" class="btn btn-danger">Delete</button>
                 </div>
 
               </form>
@@ -396,6 +622,26 @@ if(isset($_POST['delProductBtn'])){
         echo '<script type="text/javascript">
           $(document).ready(function(){
             $("#DelteProductModal").modal("show");
+          });
+        </script>';
+      } 
+
+      // Category
+
+      if(!empty($editCatModal)) {
+        // CALL MODAL HERE
+        echo '<script type="text/javascript">
+          $(document).ready(function(){
+            $("#EditCategoryModal").modal("show");
+          });
+        </script>';
+      } 
+
+      if(!empty($deleteCatModal)) {
+        // CALL MODAL HERE
+        echo '<script type="text/javascript">
+          $(document).ready(function(){
+            $("#DeleteCategoryModal").modal("show");
           });
         </script>';
       } 

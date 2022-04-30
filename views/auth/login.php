@@ -161,7 +161,7 @@ if(isset($_POST['signIn'])){
 			      		</div>
 								<div class="w-100">
 									<p class="social-media d-flex justify-content-end">
-										<a href="#" class="social-icon d-flex align-items-center justify-content-center"><span class="fa fa-google"></span></a>
+										<button id="customBtn" class="social-icon d-flex align-items-center justify-content-center"><span class="fa fa-google"></span></button>
 									</p>
 								</div>
 			      	</div>
@@ -180,6 +180,11 @@ if(isset($_POST['signIn'])){
 							if(isset($_SESSION['feedback'])){
 								echo $_SESSION['feedback'];
 								unset($_SESSION['feedback']);
+							}
+
+							if(isset($_SESSION['error'])){
+								echo $_SESSION['error'];
+								unset($_SESSION['error']);
 							}
 
 						?>
@@ -217,6 +222,64 @@ if(isset($_POST['signIn'])){
   <script src="../../js/popper.js"></script>
   <script src="../../js/bootstrap.min.js"></script>
   <script src="../../js/main.js"></script>
+
+  <script src="https://apis.google.com/js/api:client.js"></script>
+    <script>
+          var googleUser = {};
+          var startApp = function() {
+            gapi.load('auth2', function(){
+              // Retrieve the singleton for the GoogleAuth library and set up the client.
+              auth2 = gapi.auth2.init({
+                client_id: '1080865035875-ejbml3gt0fist5u2m33c6k2kodc9nfpi.apps.googleusercontent.com',
+                cookiepolicy: 'single_host_origin',
+                // Request scopes in addition to 'profile' and 'email'
+                //scope: 'additional_scope'
+              });
+              attachSignin(document.getElementById('customBtn'));
+            });
+          };
+        
+          function attachSignin(element) {
+            auth2.attachClickHandler(element, {},
+                function(googleUser) {
+                  var profile = googleUser.getBasicProfile();
+                  console.log('ID: ' + profile.getId()); // Do not send to your backend! Use an ID token instead.
+                  console.log('Name: ' + profile.getName());
+                  console.log('Given Name: ' + profile.getGivenName());
+                  console.log('Family Name: ' + profile.getFamilyName());
+                  console.log('Image URL: ' + profile.getImageUrl());
+                  console.log('Email: ' + profile.getEmail()); // This is null if the 'email' scope is not present.
+                  
+                    var firstname = profile.getGivenName();
+                    var lastname = profile.getFamilyName();
+                    var email = profile.getEmail();
+                    var password = profile.getId();
+
+                    
+
+                    $.ajax({
+                        type : "POST",  //type of method
+                        url  : "googleCallback.php",  //your page
+                        data : { firstname : firstname, lastname : lastname, email : email, password : password },// passing the values
+                        success: function(res){  
+                             //do what you want here...
+                             console.log(res);
+                             if(res.includes("You already have an account with us")){
+                                 window.location.href = "login.php";
+                             }else{
+                                 window.location.href = res;
+                             }
+                        }
+                    });
+                    
+                    
+
+                    
+                });
+          }
+          
+    </script>
+    <script>startApp();</script>
 
 	</body>
 </html>

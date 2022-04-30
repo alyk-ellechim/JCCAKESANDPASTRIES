@@ -3,11 +3,26 @@
 include 'functions/db_Connection.php'; 
 session_start();
 
+if(isset($_SESSION['ui'])){
+    header("Location: ../auth/login.php");
+}
+
 if(isset($_GET['ai'])){
     $ai = mysqli_escape_string($mysqli, $_GET['ai']);
 }else{
     $ai = "";
-}    
+}   
+
+$aid = base64_decode($_GET['ai']);
+
+$selectAdmin = $mysqli->query("SELECT * FROM admin WHERE id = '$aid'");
+$rowAdmin = mysqli_fetch_array($selectAdmin);
+
+if($rowAdmin['delivery_fee'] != null){
+    $delivery_fee = '&#8369;' . $rowAdmin['delivery_fee'];
+}else{
+    $delivery_fee = "FREE";
+}
 
 if(isset($_GET['oid'])){
     $oid = mysqli_escape_string($mysqli, $_GET['oid']);
@@ -29,6 +44,22 @@ if(isset($_POST['saveStatus'])){
     if($update_status){
         $_SESSION['statusUpdated'] = "true";
         header("Location: order_products.php?ai=".$ai."&oid=".$oid."");
+        exit();  
+    }
+}
+
+if(isset($_POST['cancel_order'])){
+    if(isset($_GET['oid'])){  
+        $on = base64_decode($_GET['oid']);
+        $oid = $_GET['oid'];
+    }
+
+
+    $remove_order = $mysqli->query("DELETE FROM orders WHERE order_no = '$on' LIMIT 1");
+
+    if($remove_order){
+        $_SESSION['orderRemoved'] = "true";
+        header("Location: orders.php?ai=".$ai."&st=NA==");
         exit();  
     }
 }
@@ -199,8 +230,17 @@ if(isset($_POST['saveStatus'])){
                     </div>
 
                     <div class="card">
-                        <h5 class="card-header  d-flex justify-content-between align-items-center">
-                            Products
+                        <h5 class="card-header d-flex justify-content-between align-items-center">
+                            <span>
+                                Products
+                            </span>
+                            <?php if($status != 'Received'){ ?>
+                            <span>
+                                <form action="order_products.php?ai=<?php echo $ai; ?>&oid=<?php echo $oid; ?>" method="POST">
+                                    <button type="submit" onclick="if(confirm('Are you sure you want to cancel this order?')){}else{return false;};" name="cancel_order" class="btn btn-danger m-0 checkout">Cancel Order</button>
+                                </form>
+                            </span>
+                            <?php } ?>
                         </h5>
 
                         <div class="card-body text-center overflow-auto" style="height: 258px;">
@@ -262,6 +302,11 @@ if(isset($_POST['saveStatus'])){
                                         }
                                     }
 
+                                    if($rowAdmin['delivery_fee'] != null){
+                                        $finalPrice = $total + $rowAdmin['delivery_fee'];
+                                    }else{
+                                        $finalPrice = $total;
+                                    }
                                 ?>
 
                             </div>
@@ -289,17 +334,26 @@ if(isset($_POST['saveStatus'])){
 
                                         <div class="totals-item m-0 p-0">
                                             <label>Delivery Fee</label>
-                                            <div class="text-end">FREE</div>
+                                            <div class="text-end"><?php echo $delivery_fee; ?></div>
                                         </div>
 
                                         <div class="totals-item totals-item-total m-0 p-0">
                                             <label style="margin-right: 80px;">Grand Total</label>
-                                            <div class="totals-value" id="cart-total"><?php echo number_format($total, 2); ?></div>
+                                            <div class="totals-value" id="cart-total"><?php echo number_format($finalPrice, 2); ?></div>
                                         </div>
 
-                                        
-                                        <button type="button" name="update_status" class="btn btn-success m-0 checkout" data-bs-toggle="modal" data-bs-target="#updateStatus">Update Status</button>
-                                        <a href="receipt.php?ai=<?php echo $ai; ?>&oid=<?php echo $oid; ?>" name="update_status" class="btn btn-info mt-0 ms-0 mb-0 me-2 checkout">Download Receipt</a>
+                                        <div class="btnWrapper">
+                                            <div class="wrapp">
+                                                <?php
+                                                    if($status != 'Received'){
+                                                        echo '<button type="button" name="update_status" class="btn btn-success m-0 checkout" data-bs-toggle="modal" data-bs-target="#updateStatus">Update Status</button>';
+                                                    }
+                                                ?>
+                                                <a href="receipt.php?ai=<?php echo $ai; ?>&oid=<?php echo $oid; ?>" target="_blank" name="update_status" class="btn btn-info mt-0 ms-0 mb-0 me-2 checkout">Download Receipt</a>
+                                            </div>
+
+                
+                                        </div>
                                     </div>
                                     
                                 </div>
@@ -322,29 +376,30 @@ if(isset($_POST['saveStatus'])){
 
     <!-- Update Status Modal -->
     <div class="modal fade" id="updateStatus" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form action="order_products.php?ai=<?php echo $ai; ?>&oid=<?php echo $oid; ?>" method="POST">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Update Status</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <p class="text-dark fs-6 m-0 p-0">Status</p>
-                    <select class="form-select" name="status" aria-label="Default select example">
-                        <option selected disabled>Select Status</option>
-                        <option value="0">Pending</option>
-                        <option value="1">Processing</option>
-                        <option value="2">Out for delivery</option>
-                    </select>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" name="saveStatus" class="btn btn-success">Save changes</button>
-                </div>
-            </form>
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form action="order_products.php?ai=<?php echo $ai; ?>&oid=<?php echo $oid; ?>" method="POST">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Update Status</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="text-dark fs-6 m-0 p-0">Status</p>
+                        <select class="form-select" name="status" aria-label="Default select example">
+                            <option selected disabled>Select Status</option>
+                            <option value="0">Pending</option>
+                            <option value="1">Processing</option>
+                            <option value="2">Out for delivery</option>
+                            <option value="3">Received</option>
+                        </select>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" name="saveStatus" class="btn btn-success">Save changes</button>
+                    </div>
+                </form>
+            </div>
         </div>
-    </div>
     </div>
 
     <script src="../../js/jquery.min.js"></script>

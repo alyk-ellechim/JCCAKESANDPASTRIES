@@ -3,6 +3,14 @@
 include 'functions/db_Connection.php'; 
 session_start();
 
+if(isset($_SESSION['ui'])){
+  header("Location: ../auth/login.php");
+}
+
+if(isset($_SESSION['ui'])){
+  header("Location: ../auth/login.php");
+}
+
 if(isset($_GET['ai'])){
   $ai = mysqli_escape_string($mysqli, $_GET['ai']);
 }else{
@@ -11,6 +19,18 @@ if(isset($_GET['ai'])){
     $ai = $_SESSION['ai'];
   }
 }  
+
+
+$aid = base64_decode($_GET['ai']);
+
+$selectAdmin = $mysqli->query("SELECT * FROM admin WHERE id = '$aid'");
+$rowAdmin = mysqli_fetch_array($selectAdmin);
+
+if($rowAdmin['delivery_fee'] != null){
+    $delivery_fee = $rowAdmin['delivery_fee'];
+}else{
+    $delivery_fee = 0;
+}
 
 
 if(isset($_GET['st'])){
@@ -26,6 +46,18 @@ if(isset($_GET['st'])){
   }elseif($st == 3){
     $status_query = 'WHERE status = 3';
   } 
+}
+
+if(isset($_POST['saveDelivery'])){
+  $delivery_fee = $_POST['deliveryFee'];
+
+  $update_delivery = $mysqli->query("UPDATE admin SET delivery_fee = '$delivery_fee' WHERE id = '$aid'");
+
+  if($update_delivery){
+      $_SESSION['deliveryUpdated'] = "true";
+      header("Location: orders.php?ai=".$ai."&st=NA==");
+      exit();  
+  }
 }
 
 ?>
@@ -102,9 +134,15 @@ if(isset($_GET['st'])){
         
         <div class="content" id="contentID">
 
-        <div class="date mb-2">
-          <span style="font-size: 11pt;">From: <input type="date" class="p-1 rounded" id="fromDate" name="fromDate" style="border: 1px solid #ced4da;"></span>
-          <span style="font-size: 11pt;">To: <input type="date" class="p-1 rounded" id="toDate" name="toDate" style="border: 1px solid #ced4da;"></span>
+        <div class="date mb-2 d-flex justify-content-between">
+          <div class="dates">
+            <span style="font-size: 11pt;">From: <input type="date" class="p-1 rounded" id="fromDate" name="fromDate" style="border: 1px solid #ced4da;"></span>
+            <span style="font-size: 11pt;">To: <input type="date" class="p-1 rounded" id="toDate" name="toDate" style="border: 1px solid #ced4da;"></span>
+          </div>
+          <div class="btnDownload">
+            <button type="button" name="addDF" class="btn btn-success m-0 checkout" data-bs-toggle="modal" data-bs-target="#addDelivery">Delivery Fee</button>
+            <button class="btn btn-info ms-2" id="btnDownload">Download</button>
+          </div>
         </div>
 
         <div class="card">
@@ -163,7 +201,7 @@ if(isset($_GET['st'])){
             </h5>
             <div class="card-body text-center overflow-auto" style="height: 410px;">
                 <!-- Orders --> 
-                <table class="table table-striped">
+                <table class="table table-striped" id="orders">
                     <thead>
                         <tr>
                         <th scope="col">#</th>
@@ -171,7 +209,7 @@ if(isset($_GET['st'])){
                         <th scope="col">Price</th>
                         <th scope="col">Date Ordered</th>
                         <th scope="col">Status</th>
-                        <th scope="col">Action</th>
+                        <th scope="col" id="last">Action</th>
                         </tr>
                     </thead>
 
@@ -189,7 +227,7 @@ if(isset($_GET['st'])){
                                     $time = strtotime($row_orders['date_ordered']);
                                     $date_ordered = date("m/d/y g:i A", $time);
 
-                                    $total_price = $row_orders['total_price'];
+                                    $total_price = $row_orders['total_price'] + $delivery_fee;
 
                                     if($row_orders['status'] == 0){
                                       $status = 'Pending';
@@ -203,12 +241,12 @@ if(isset($_GET['st'])){
 
 
                                     echo '<tr>
-                                            <th scope="row">'.$counter.'</th>
+                                            <td scope="row">'.$counter.'</td>
                                             <td>'.$row_orders['order_no'].'</td>
-                                            <td>&#8369;'.number_format($total_price, 2).'</td>
+                                            <td>'.number_format($total_price, 2).'</td>
                                             <td>'.$date_ordered.'</td>
                                             <td>'.$status.'</td>
-                                            <td><a href="order_products.php?ai='.$ai.'&oid='.base64_encode($row_orders['order_no']).'" class="btn btn-primary btn-sm">View</a></td>
+                                            <td id="last"><a href="order_products.php?ai='.$ai.'&oid='.base64_encode($row_orders['order_no']).'" class="btn btn-primary btn-sm">View</a></td>
                                         </tr>';
                                 }
                             }
@@ -230,6 +268,31 @@ if(isset($_GET['st'])){
       
 		</div>
 
+
+    <!-- Add Delivery Modal -->
+    <div class="modal fade" id="addDelivery" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form action="orders.php?ai=<?php echo $ai; ?>&st=NA==" method="POST">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Delivery Fee</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-floating mb-3">
+                          <input type="number" name="deliveryFee" min="0" value="<?php echo $delivery_fee; ?>" class="form-control" id="floatingInput" placeholder="Delivery Fee">
+                          <label for="floatingInput">Delivery Fee</label>
+                      </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" name="saveDelivery" class="btn btn-success">Save changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script src="../../js/jquery.min.js"></script>
     <script src="../../js/popper.js"></script>
     <script src="../../js/bootstrap.min.js"></script>
@@ -237,39 +300,43 @@ if(isset($_GET['st'])){
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
 
+    <script type="text/javascript" src="../../js/jspdf.min.js"></script>
 
-    <!-- tbl download -->
-    <script type="text/javascript" src="../src/jquery-3.3.1.slim.min.js"></script>
+    <script type="text/javascript" src="../../js/jspdf.plugin.autotable.min.js"></script>
 
-    <script type="text/javascript" src="../src/jspdf.min.js"></script>
+    <script type="text/javascript" src="../../js/tableHTMLExport.js"></script>
 
-    <script type="text/javascript" src="../src/jspdf.plugin.autotable.min.js"></script>
+    <?php			
+      if(isset($_SESSION['orderRemoved'])) {
+        echo '<script type="text/javascript">
+          swal("Success!", "Order has been canceled", "success");
+        </script>';
+        unset($_SESSION['orderRemoved']);
+      } 
 
-    <script type="text/javascript" src="../src/tableHTMLExport.js"></script>
+      if(isset($_SESSION['deliveryUpdated'])) {
+        echo '<script type="text/javascript">
+          swal("Success!", "Delivery fee has been updated", "success");
+        </script>';
+        unset($_SESSION['deliveryUpdated']);
+      } 
 
+      
 
+    ?>
 
     <script>
 
       $(document).ready(function() {
 
+
+
         function calcTime(city, offset) {
-            // create Date object for current location
             var d = new Date();
-
-            // convert to msec
-            // subtract local time zone offset
-            // get UTC time in msec
             var utc = d.getTime() + (d.getTimezoneOffset() * 60000);
-
-            // create new Date object for different city
-            // using supplied offset
             var nd = new Date(utc + (3600000*offset));
-
-            // return time as a string
             var day = ("0" + nd.getDate()).slice(-2);
             var month = ("0" + (nd.getMonth() + 1)).slice(-2);
-
             var today = nd.getFullYear()+"-"+(month)+"-"+(day) ;
             return today;
         }
@@ -305,8 +372,6 @@ if(isset($_GET['st'])){
               }).done(function (data) {
 
                   var counter = 0;
-
-                  console.log(data);
 
                   $.each(data, function(key, order){
                     counter += 1;
@@ -371,8 +436,6 @@ if(isset($_GET['st'])){
                 }).done(function (data) {
 
                     var counter = 0;
-
-                    console.log(data);
 
                     $.each(data, function(key, order){
                       counter += 1;
@@ -497,8 +560,8 @@ if(isset($_GET['st'])){
       });
 
 
-      $("#download_order_btn").on("click",function(){
-        $("#orders_tbl_download").tableHTMLExport({
+      $("#btnDownload").on("click",function(){
+        $("#orders").tableHTMLExport({
         type:'pdf',
         filename:'Orders.pdf',
         ignoreColumns:'#last'

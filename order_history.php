@@ -3,6 +3,10 @@
 include 'views/admin/functions/db_Connection.php'; 
 session_start();
 
+if(isset($_SESSION['ai'])){
+  header("Location: views/auth/login.php");
+}
+
 if(isset($_GET['ui'])){
   $ui = mysqli_escape_string($mysqli, $_GET['ui']);
 }else{

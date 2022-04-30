@@ -1,6 +1,10 @@
 <?php
 include 'views/admin/functions/db_Connection.php';
 
+if(isset($_SESSION['ai'])){
+    header("Location: views/auth/login.php");
+  }
+
 $id =mysqli_real_escape_string($mysqli, $_GET['ui']);
 $on =mysqli_real_escape_string($mysqli, $_GET['on']);
 $user_id = base64_decode($id);
